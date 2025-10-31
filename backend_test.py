@@ -200,13 +200,22 @@ class BackendTester:
         
         self.test_results["total"] += 1
         
-        # Test with invalid token
-        response = self.make_request("GET", "/auth/me", auth_token="invalid_token")
-        if response and response.status_code == 401:
-            log_test("Invalid JWT Token", "PASS", "Correctly rejected invalid token")
-            self.test_results["passed"] += 1
-        else:
-            log_test("Invalid JWT Token", "FAIL", f"Should have returned 401, got: {response.status_code if response else 'No response'}")
+        # Add delay before next test
+        time.sleep(2)
+        
+        # Test with invalid token - use shorter timeout for this test
+        try:
+            response = requests.get(f"{BASE_URL}/auth/me", 
+                                  headers={"Authorization": "Bearer invalid_token"}, 
+                                  timeout=10)
+            if response.status_code == 401:
+                log_test("Invalid JWT Token", "PASS", "Correctly rejected invalid token")
+                self.test_results["passed"] += 1
+            else:
+                log_test("Invalid JWT Token", "FAIL", f"Should have returned 401, got: {response.status_code}")
+                self.test_results["failed"] += 1
+        except Exception as e:
+            log_test("Invalid JWT Token", "FAIL", f"Request failed: {str(e)}")
             self.test_results["failed"] += 1
         
         self.test_results["total"] += 1
