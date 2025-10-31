@@ -42,6 +42,9 @@ class BackendTester:
         self.user_id = None
         self.coach_id = None
         self.meal_id = None
+        self.timestamp = str(int(time.time()))
+        self.user_email = f"sarah.johnson.{self.timestamp}@example.com"
+        self.coach_email = f"dr.martinez.{self.timestamp}@healthcoach.com"
         self.test_results = {
             "passed": 0,
             "failed": 0,
