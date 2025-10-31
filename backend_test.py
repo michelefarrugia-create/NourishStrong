@@ -13,7 +13,7 @@ import sys
 
 # Configuration
 BASE_URL = "https://nourish-track.preview.emergentagent.com/api"
-TIMEOUT = 30
+TIMEOUT = 60
 
 class Colors:
     GREEN = '\033[92m'
