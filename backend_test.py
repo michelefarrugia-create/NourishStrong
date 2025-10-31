@@ -161,7 +161,7 @@ class BackendTester:
         
         # Test user login - use the same email from registration
         login_data = {
-            "email": f"sarah.johnson.{timestamp}@example.com",
+            "email": self.user_email,
             "password": "SecurePass123!"
         }
         
