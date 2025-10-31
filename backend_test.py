@@ -102,13 +102,9 @@ class BackendTester:
         """Test user registration with both user and coach roles"""
         print(f"\n{Colors.BLUE}=== Testing User Registration ==={Colors.ENDC}")
         
-        # Use timestamp to ensure unique emails
-        import time
-        timestamp = str(int(time.time()))
-        
         # Test regular user registration
         user_data = {
-            "email": f"sarah.johnson.{timestamp}@example.com",
+            "email": self.user_email,
             "password": "SecurePass123!",
             "name": "Sarah Johnson",
             "role": "user"
