@@ -1,34 +1,612 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+
+:root {
+  --bg-page: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-section: rgba(243, 234, 255, 0.3);
+  --text-primary: rgb(24, 24, 24);
+  --text-secondary: rgb(112, 112, 112);
+  --text-muted: rgb(143, 143, 143);
+  --border-light: rgba(24, 24, 24, 0.1);
+  --border-medium: rgba(24, 24, 24, 0.2);
+  --border-strong: rgba(24, 24, 24, 0.3);
+  --brand-primary: rgb(0, 128, 255);
+  --brand-hover: rgb(0, 153, 255);
+  --brand-active: rgb(0, 102, 204);
+  --gradient-button: linear-gradient(168deg, rgb(67, 67, 67) -63%, rgb(0, 0, 0) 100%);
+  --gradient-hero: linear-gradient(135deg, rgba(243, 234, 255, 0.8) 0%, rgba(255, 232, 240, 0.8) 25%, rgba(232, 244, 255, 0.8) 50%, rgba(255, 232, 213, 0.8) 75%, rgba(243, 234, 255, 0.8) 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
+body {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+/* Auth screens */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--gradient-hero);
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 48px;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.auth-title {
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.2;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.auth-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Satoshi', sans-serif;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.1);
+}
+
+.btn-primary {
+  background: var(--gradient-button);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  padding: 14px 24px;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 100px;
+  padding: 14px 24px;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--brand-primary);
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 4px;
+  text-decoration: underline;
+}
+
+.role-selector {
+  margin-bottom: 24px;
+}
+
+.role-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.role-options {
+  display: flex;
+  gap: 12px;
+}
+
+.role-option {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+}
+
+.role-option input {
+  display: none;
+}
+
+.role-option.selected {
+  border-color: var(--brand-primary);
+  background: rgba(0, 128, 255, 0.05);
+}
+
+/* Dashboard */
+.dashboard {
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.dashboard-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  padding: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-content h1 {
+  font-weight: 700;
+  font-size: clamp(24px, 3vw, 32px);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.dashboard-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: clamp(20px, 2.5vw, 24px);
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.error-message, .success-message {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.error-message {
+  background: rgba(255, 0, 0, 0.1);
+  color: rgb(200, 0, 0);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.success-message {
+  background: rgba(0, 200, 0, 0.1);
+  color: rgb(0, 150, 0);
+  border: 1px solid rgba(0, 200, 0, 0.2);
+}
+
+/* Capture section */
+.capture-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.capture-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.capture-options .btn-primary,
+.capture-options .btn-secondary {
+  flex: 1;
+  min-width: 200px;
+}
+
+.upload-label {
+  cursor: pointer;
+}
+
+.meal-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.notes-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 16px;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.notes-input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.1);
+}
+
+.preview-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.preview-actions .btn-primary,
+.preview-actions .btn-secondary {
+  flex: 1;
+}
+
+/* Camera modal */
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.camera-container {
+  width: 100%;
+  max-width: 600px;
+}
+
+.camera-video {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.camera-controls {
+  display: flex;
+  gap: 16px;
+}
+
+.camera-controls button {
+  flex: 1;
+}
+
+/* Meals section */
+.meals-section {
+  margin-top: 32px;
+}
+
+.meals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.meal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.meal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.meal-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.meal-info {
+  padding: 16px;
+}
+
+.meal-time {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.meal-notes {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.delete-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: rgba(255, 0, 0, 0.05);
+  color: rgb(200, 0, 0);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* Coach dashboard */
+.coach-view {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.users-sidebar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 24px;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-item {
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-item:hover {
+  background: var(--bg-section);
+  border-color: var(--border-medium);
+}
+
+.user-item.active {
+  background: rgba(0, 128, 255, 0.05);
+  border-color: var(--brand-primary);
+}
+
+.user-info h3 {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.user-info p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.user-details {
+  min-height: 400px;
+}
+
+.stats-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--bg-section);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.coach-meal-card .nutrition-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.coach-meal-card .nutrition-details p {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+
+.coach-meal-card h4 {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 809px) {
+  .auth-card {
+    padding: 32px 24px;
+  }
+  
+  .dashboard-content {
+    padding: 24px 16px;
+  }
+  
+  .capture-options {
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+  }
+  
+  .capture-options .btn-primary,
+  .capture-options .btn-secondary {
+    min-width: 100%;
+  }
+  
+  .meals-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .coach-view {
+    grid-template-columns: 1fr;
+  }
+  
+  .users-sidebar {
+    position: static;
+    max-height: none;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
-.App-link {
-    color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .role-options {
+    flex-direction: column;
+  }
 }

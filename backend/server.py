@@ -1,89 +1,377 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, EmailStr
+from pymongo import MongoClient
+from datetime import datetime, timedelta
+from typing import Optional, List
 import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+import jwt
+import bcrypt
 import uuid
-from datetime import datetime, timezone
+import base64
+import asyncio
+from dotenv import load_dotenv
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
+load_dotenv()
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
 app = FastAPI()
+security = HTTPBearer()
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
-app.include_router(api_router)
-
+# CORS
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# MongoDB setup
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
+client = MongoClient(MONGO_URL)
+db = client['weight_loss_app']
+users_collection = db['users']
+meals_collection = db['meals']
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+# JWT settings
+JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_ALGORITHM = "HS256"
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', 'sk-emergent-2F8757d69949133Ef3')
+
+# Models
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str = "user"  # "user" or "coach"
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class MealCreate(BaseModel):
+    image_base64: str
+    notes: Optional[str] = ""
+
+class UserProfile(BaseModel):
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    activity_level: Optional[str] = None
+    goal_weight: Optional[float] = None
+
+# Helper functions
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def create_token(user_id: str, email: str, role: str) -> str:
+    payload = {
+        "user_id": user_id,
+        "email": email,
+        "role": role,
+        "exp": datetime.utcnow() + timedelta(days=30)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    payload = decode_token(token)
+    user = users_collection.find_one({"user_id": payload["user_id"]})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+def require_coach(user = Depends(get_current_user)):
+    if user["role"] != "coach":
+        raise HTTPException(status_code=403, detail="Coach access required")
+    return user
+
+async def analyze_food_image(image_base64: str) -> dict:
+    """Analyze food image using GPT-4o with Emergent LLM key"""
+    try:
+        # Create chat instance
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"food-analysis-{uuid.uuid4()}",
+            system_message="You are a nutritionist expert. Analyze food images and provide detailed nutritional information."
+        ).with_model("openai", "gpt-4o")
+        
+        # Create image content
+        image_content = ImageContent(image_base64=image_base64)
+        
+        # Create message
+        user_message = UserMessage(
+            text="""Analyze this food image and provide nutritional information in the following JSON format ONLY (no other text):
+{
+  "food_name": "name of the dish",
+  "calories": number,
+  "protein": number in grams,
+  "carbs": number in grams,
+  "fats": number in grams,
+  "portion_size": "estimated portion size",
+  "confidence": "high/medium/low"
+}
+
+Be as accurate as possible with estimations.""",
+            file_contents=[image_content]
+        )
+        
+        # Get response
+        response = await chat.send_message(user_message)
+        
+        # Parse response
+        import json
+        # Try to extract JSON from response
+        response_text = response.strip()
+        
+        # Remove markdown code blocks if present
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+        
+        nutrition_data = json.loads(response_text)
+        return nutrition_data
+        
+    except Exception as e:
+        print(f"Error analyzing food image: {str(e)}")
+        # Return default values if analysis fails
+        return {
+            "food_name": "Unknown food",
+            "calories": 0,
+            "protein": 0,
+            "carbs": 0,
+            "fats": 0,
+            "portion_size": "unknown",
+            "confidence": "low",
+            "error": str(e)
+        }
+
+# Routes
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy"}
+
+@app.post("/api/auth/register")
+def register(user_data: UserRegister):
+    # Check if user exists
+    if users_collection.find_one({"email": user_data.email}):
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    user = {
+        "user_id": user_id,
+        "email": user_data.email,
+        "password": hash_password(user_data.password),
+        "name": user_data.name,
+        "role": user_data.role,
+        "created_at": datetime.utcnow().isoformat(),
+        "profile": {}
+    }
+    users_collection.insert_one(user)
+    
+    # Create token
+    token = create_token(user_id, user_data.email, user_data.role)
+    
+    return {
+        "token": token,
+        "user": {
+            "user_id": user_id,
+            "email": user_data.email,
+            "name": user_data.name,
+            "role": user_data.role
+        }
+    }
+
+@app.post("/api/auth/login")
+def login(user_data: UserLogin):
+    user = users_collection.find_one({"email": user_data.email})
+    
+    if not user or not verify_password(user_data.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_token(user["user_id"], user["email"], user["role"])
+    
+    return {
+        "token": token,
+        "user": {
+            "user_id": user["user_id"],
+            "email": user["email"],
+            "name": user["name"],
+            "role": user["role"]
+        }
+    }
+
+@app.get("/api/auth/me")
+def get_me(user = Depends(get_current_user)):
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "name": user["name"],
+        "role": user["role"],
+        "profile": user.get("profile", {})
+    }
+
+@app.put("/api/profile")
+def update_profile(profile_data: UserProfile, user = Depends(get_current_user)):
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": {"profile": profile_data.dict(exclude_none=True)}}
+    )
+    return {"message": "Profile updated successfully"}
+
+@app.post("/api/meals")
+async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
+    # Analyze the food image
+    nutrition_data = await analyze_food_image(meal_data.image_base64)
+    
+    # Create meal entry
+    meal_id = str(uuid.uuid4())
+    meal = {
+        "meal_id": meal_id,
+        "user_id": user["user_id"],
+        "image_base64": meal_data.image_base64,
+        "notes": meal_data.notes,
+        "nutrition": nutrition_data,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    meals_collection.insert_one(meal)
+    
+    # Return supportive message without numbers for regular users
+    if user["role"] == "user":
+        return {
+            "meal_id": meal_id,
+            "message": f"Great job logging your meal! 🎉 {nutrition_data.get('food_name', 'Your food')} looks delicious. Keep up the amazing work on your journey!",
+            "food_name": nutrition_data.get('food_name', 'Unknown'),
+            "timestamp": meal["timestamp"]
+        }
+    else:
+        # Coaches can see all data
+        return {
+            "meal_id": meal_id,
+            "nutrition": nutrition_data,
+            "timestamp": meal["timestamp"]
+        }
+
+@app.get("/api/meals")
+def get_meals(user = Depends(get_current_user)):
+    meals = list(meals_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    # Remove MongoDB _id
+    for meal in meals:
+        meal.pop('_id', None)
+        
+        # Hide nutrition data from regular users
+        if user["role"] == "user":
+            meal.pop('nutrition', None)
+    
+    return {"meals": meals}
+
+@app.get("/api/meals/{meal_id}")
+def get_meal(meal_id: str, user = Depends(get_current_user)):
+    meal = meals_collection.find_one({"meal_id": meal_id})
+    
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    
+    # Check if user owns the meal or is a coach
+    if meal["user_id"] != user["user_id"] and user["role"] != "coach":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    meal.pop('_id', None)
+    
+    # Hide nutrition data from regular users
+    if user["role"] == "user":
+        meal.pop('nutrition', None)
+    
+    return meal
+
+@app.delete("/api/meals/{meal_id}")
+def delete_meal(meal_id: str, user = Depends(get_current_user)):
+    meal = meals_collection.find_one({"meal_id": meal_id})
+    
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    
+    if meal["user_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    meals_collection.delete_one({"meal_id": meal_id})
+    return {"message": "Meal deleted successfully"}
+
+# Coach-only endpoints
+@app.get("/api/coach/users")
+def get_all_users(coach = Depends(require_coach)):
+    users = list(users_collection.find({"role": "user"}))
+    
+    for user in users:
+        user.pop('_id', None)
+        user.pop('password', None)
+    
+    return {"users": users}
+
+@app.get("/api/coach/users/{user_id}/meals")
+def get_user_meals(user_id: str, coach = Depends(require_coach)):
+    # Get user info
+    user = users_collection.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get all meals for this user
+    meals = list(meals_collection.find({"user_id": user_id}).sort("timestamp", -1))
+    
+    for meal in meals:
+        meal.pop('_id', None)
+    
+    return {
+        "user": {
+            "user_id": user["user_id"],
+            "name": user["name"],
+            "email": user["email"],
+            "profile": user.get("profile", {})
+        },
+        "meals": meals
+    }
+
+@app.get("/api/coach/users/{user_id}/stats")
+def get_user_stats(user_id: str, coach = Depends(require_coach)):
+    meals = list(meals_collection.find({"user_id": user_id}))
+    
+    total_calories = 0
+    total_protein = 0
+    total_carbs = 0
+    total_fats = 0
+    
+    for meal in meals:
+        nutrition = meal.get('nutrition', {})
+        total_calories += nutrition.get('calories', 0)
+        total_protein += nutrition.get('protein', 0)
+        total_carbs += nutrition.get('carbs', 0)
+        total_fats += nutrition.get('fats', 0)
+    
+    return {
+        "total_meals": len(meals),
+        "total_calories": total_calories,
+        "total_protein": total_protein,
+        "total_carbs": total_carbs,
+        "total_fats": total_fats,
+        "avg_calories_per_meal": total_calories / len(meals) if meals else 0
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
