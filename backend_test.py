@@ -160,9 +160,9 @@ class BackendTester:
         """Test user login functionality"""
         print(f"\n{Colors.BLUE}=== Testing User Login ==={Colors.ENDC}")
         
-        # Test user login
+        # Test user login - use the same email from registration
         login_data = {
-            "email": "sarah.johnson@example.com",
+            "email": f"sarah.johnson.{timestamp}@example.com",
             "password": "SecurePass123!"
         }
         
