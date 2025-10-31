@@ -224,13 +224,20 @@ class BackendTester:
         """Test unauthorized access without token"""
         print(f"\n{Colors.BLUE}=== Testing Unauthorized Access ==={Colors.ENDC}")
         
-        # Test accessing protected endpoint without token
-        response = self.make_request("GET", "/meals")
-        if response and response.status_code == 403:
-            log_test("Unauthorized Access", "PASS", "Correctly blocked access without token")
-            self.test_results["passed"] += 1
-        else:
-            log_test("Unauthorized Access", "FAIL", f"Should have returned 403, got: {response.status_code if response else 'No response'}")
+        # Add delay before test
+        time.sleep(2)
+        
+        # Test accessing protected endpoint without token - use direct request
+        try:
+            response = requests.get(f"{BASE_URL}/meals", timeout=10)
+            if response.status_code == 403:
+                log_test("Unauthorized Access", "PASS", "Correctly blocked access without token")
+                self.test_results["passed"] += 1
+            else:
+                log_test("Unauthorized Access", "FAIL", f"Should have returned 403, got: {response.status_code}")
+                self.test_results["failed"] += 1
+        except Exception as e:
+            log_test("Unauthorized Access", "FAIL", f"Request failed: {str(e)}")
             self.test_results["failed"] += 1
         
         self.test_results["total"] += 1
