@@ -132,7 +132,7 @@ class BackendTester:
         
         # Test coach registration
         coach_data = {
-            "email": f"dr.martinez.{timestamp}@healthcoach.com",
+            "email": self.coach_email,
             "password": "CoachPass456!",
             "name": "Dr. Maria Martinez",
             "role": "coach"
