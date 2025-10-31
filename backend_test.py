@@ -69,6 +69,9 @@ class BackendTester:
                 response = requests.delete(url, headers=headers, timeout=TIMEOUT)
             
             return response
+        except requests.exceptions.Timeout:
+            print(f"Request timed out after {TIMEOUT} seconds")
+            return None
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
             return None
