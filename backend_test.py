@@ -395,13 +395,19 @@ class BackendTester:
         self.test_results["total"] += 1
         
         # Test regular user CANNOT access coach endpoints
-        time.sleep(1)
-        response = self.make_request("GET", "/coach/users", auth_token=self.user_token)
-        if response and response.status_code == 403:
-            log_test("User Blocked from Coach Endpoint", "PASS", "Regular user correctly blocked")
-            self.test_results["passed"] += 1
-        else:
-            log_test("User Blocked from Coach Endpoint", "FAIL", f"Should have returned 403, got: {response.status_code if response else 'No response'}")
+        time.sleep(2)
+        try:
+            response = requests.get(f"{BASE_URL}/coach/users", 
+                                  headers={"Authorization": f"Bearer {self.user_token}"}, 
+                                  timeout=15)
+            if response.status_code == 403:
+                log_test("User Blocked from Coach Endpoint", "PASS", "Regular user correctly blocked")
+                self.test_results["passed"] += 1
+            else:
+                log_test("User Blocked from Coach Endpoint", "FAIL", f"Should have returned 403, got: {response.status_code}")
+                self.test_results["failed"] += 1
+        except Exception as e:
+            log_test("User Blocked from Coach Endpoint", "FAIL", f"Request failed: {str(e)}")
             self.test_results["failed"] += 1
         
         self.test_results["total"] += 1
