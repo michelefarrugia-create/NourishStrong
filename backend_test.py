@@ -128,9 +128,12 @@ class BackendTester:
         
         self.test_results["total"] += 1
         
+        # Add delay between requests
+        time.sleep(1)
+        
         # Test coach registration
         coach_data = {
-            "email": "dr.martinez@healthcoach.com",
+            "email": f"dr.martinez.{timestamp}@healthcoach.com",
             "password": "CoachPass456!",
             "name": "Dr. Maria Martinez",
             "role": "coach"
