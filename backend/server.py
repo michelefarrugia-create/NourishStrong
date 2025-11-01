@@ -63,6 +63,9 @@ class UserProfile(BaseModel):
     activity_level: Optional[str] = None
     goal_weight: Optional[float] = None
 
+class CoachAssignment(BaseModel):
+    coach_email: str
+
 # Helper functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
