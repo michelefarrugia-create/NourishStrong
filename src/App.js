@@ -71,3 +71,4 @@ export default function App() {
     </div>
   );
 }
+import Auth from './Auth';
