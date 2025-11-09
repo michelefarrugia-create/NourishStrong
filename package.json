@@ -2,7 +2,6 @@
   "name": "nourishstrong-frontend",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://michelefarrugia-create.github.io/NourishStrong",
   "engines": {
     "node": "22.x"
   },
