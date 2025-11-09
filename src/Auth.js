@@ -32,8 +32,7 @@ export default function Auth({ onLogin }) {
       return;
     }
 
-    // Mock authentication logic
-    // In production, call a backend API to verify or create users
+    // Mock authentication - replace with backend call in production
     onLogin({ username, role });
   };
 
@@ -72,13 +71,19 @@ export default function Auth({ onLogin }) {
           </>
         )}
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" style={{ padding: '0.5rem 1rem', marginTop: '1rem', backgroundColor: '#93c572', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button
+          type="submit"
+          style={{ padding: '0.5rem 1rem', marginTop: '1rem', backgroundColor: '#93c572', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
           {isSignUp ? 'Create Account' : 'Login'}
         </button>
       </form>
       <p style={{ marginTop: '1rem' }}>
         {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-        <button onClick={() => { setIsSignUp(!isSignUp); setError(null); }} style={{ background: 'none', border: 'none', color: '#509934', cursor: 'pointer', textDecoration: 'underline' }}>
+        <button
+          onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
+          style={{ background: 'none', border: 'none', color: '#509934', cursor: 'pointer', textDecoration: 'underline' }}
+        >
           {isSignUp ? 'Login' : 'Sign Up'}
         </button>
       </p>
