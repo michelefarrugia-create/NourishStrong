@@ -18,6 +18,21 @@ function App() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('user');
 
+  // Profile state
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    age: '',
+    gender: '',
+    height: '',
+    weight: '',
+    activity_level: '',
+    goal_weight: ''
+  });
+
+  // Coach assignment state
+  const [showCoachAssignment, setShowCoachAssignment] = useState(false);
+  const [coachEmail, setCoachEmail] = useState('');
+
   // Camera state
   const [showCamera, setShowCamera] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -31,6 +46,7 @@ function App() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [userMeals, setUserMeals] = useState([]);
   const [userStats, setUserStats] = useState(null);
+  const [selectedUserInfo, setSelectedUserInfo] = useState(null);
 
   // Check authentication on load
   useEffect(() => {
@@ -45,6 +61,17 @@ function App() {
         fetchAllUsers();
       } else {
         fetchMeals();
+        // Load profile data
+        if (user.profile) {
+          setProfileData({
+            age: user.profile.age || '',
+            gender: user.profile.gender || '',
+            height: user.profile.height || '',
+            weight: user.profile.weight || '',
+            activity_level: user.profile.activity_level || '',
+            goal_weight: user.profile.goal_weight || ''
+          });
+        }
       }
     }
   }, [user]);
@@ -111,6 +138,7 @@ function App() {
       setLoading(true);
       const data = await apiCall(`/api/coach/users/${userId}/meals`);
       setUserMeals(data.meals);
+      setSelectedUserInfo(data.user);
       
       const stats = await apiCall(`/api/coach/users/${userId}/stats`);
       setUserStats(stats);
@@ -150,6 +178,68 @@ function App() {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setCurrentView('dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const profileToSend = {};
+      Object.keys(profileData).forEach(key => {
+        if (profileData[key] !== '') {
+          profileToSend[key] = profileData[key];
+        }
+      });
+
+      await apiCall('/api/profile', 'PUT', profileToSend);
+      setSuccess('Profile updated successfully!');
+      setShowProfile(false);
+      fetchCurrentUser();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAssignCoach = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const data = await apiCall('/api/assign-coach', 'POST', { coach_email: coachEmail });
+      setSuccess(data.message);
+      setShowCoachAssignment(false);
+      setCoachEmail('');
+      fetchCurrentUser();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveCoach = async () => {
+    if (!window.confirm('Are you sure you want to remove your coach?')) return;
+    
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const data = await apiCall('/api/remove-coach', 'DELETE');
+      setSuccess(data.message);
+      fetchCurrentUser();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -373,6 +463,120 @@ function App() {
     </div>
   );
 
+  const renderProfileModal = () => (
+    <div className="modal-overlay" onClick={() => setShowProfile(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Update Profile</h2>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <form onSubmit={handleUpdateProfile}>
+          <input
+            type="number"
+            placeholder="Age"
+            value={profileData.age}
+            onChange={(e) => setProfileData({...profileData, age: e.target.value})}
+            className="input-field"
+          />
+          
+          <select
+            value={profileData.gender}
+            onChange={(e) => setProfileData({...profileData, gender: e.target.value})}
+            className="input-field"
+          >
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+          
+          <input
+            type="number"
+            step="0.1"
+            placeholder="Height (cm)"
+            value={profileData.height}
+            onChange={(e) => setProfileData({...profileData, height: e.target.value})}
+            className="input-field"
+          />
+          
+          <input
+            type="number"
+            step="0.1"
+            placeholder="Current Weight (kg)"
+            value={profileData.weight}
+            onChange={(e) => setProfileData({...profileData, weight: e.target.value})}
+            className="input-field"
+          />
+          
+          <select
+            value={profileData.activity_level}
+            onChange={(e) => setProfileData({...profileData, activity_level: e.target.value})}
+            className="input-field"
+          >
+            <option value="">Select Activity Level</option>
+            <option value="sedentary">Sedentary (little or no exercise)</option>
+            <option value="light">Lightly active (1-3 days/week)</option>
+            <option value="moderate">Moderately active (3-5 days/week)</option>
+            <option value="very">Very active (6-7 days/week)</option>
+            <option value="extra">Extra active (athlete)</option>
+          </select>
+          
+          <input
+            type="number"
+            step="0.1"
+            placeholder="Goal Weight (kg)"
+            value={profileData.goal_weight}
+            onChange={(e) => setProfileData({...profileData, goal_weight: e.target.value})}
+            className="input-field"
+          />
+          
+          <div className="modal-actions">
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Profile'}
+            </button>
+            <button type="button" onClick={() => setShowProfile(false)} className="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  const renderCoachAssignmentModal = () => (
+    <div className="modal-overlay" onClick={() => setShowCoachAssignment(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Assign a Coach</h2>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <p className="modal-subtitle">Enter your coach's email address to connect with them.</p>
+        
+        <form onSubmit={handleAssignCoach}>
+          <input
+            type="email"
+            placeholder="Coach's Email"
+            value={coachEmail}
+            onChange={(e) => setCoachEmail(e.target.value)}
+            required
+            className="input-field"
+          />
+          
+          <div className="modal-actions">
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Assigning...' : 'Assign Coach'}
+            </button>
+            <button type="button" onClick={() => setShowCoachAssignment(false)} className="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -380,6 +584,7 @@ function App() {
           <h1>Your Journey</h1>
           <div className="header-actions">
             <span className="user-name">Hi, {user?.name}!</span>
+            <button onClick={() => setShowProfile(true)} className="btn-secondary">Profile</button>
             <button onClick={logout} className="btn-secondary">Logout</button>
           </div>
         </div>
@@ -388,6 +593,41 @@ function App() {
       <div className="dashboard-content">
         {success && <div className="success-message">{success}</div>}
         {error && <div className="error-message">{error}</div>}
+
+        {/* Coach Info Section */}
+        {user?.coach ? (
+          <div className="coach-info-card">
+            <h3>Your Coach</h3>
+            <p><strong>{user.coach.name}</strong></p>
+            <p>{user.coach.email}</p>
+            <button onClick={handleRemoveCoach} className="btn-remove-coach">
+              Remove Coach
+            </button>
+          </div>
+        ) : (
+          <div className="coach-info-card">
+            <h3>No Coach Assigned</h3>
+            <p>Connect with a coach to get personalized support!</p>
+            <button onClick={() => setShowCoachAssignment(true)} className="btn-primary">
+              Add a Coach
+            </button>
+          </div>
+        )}
+
+        {/* Profile Summary */}
+        {user?.profile && Object.keys(user.profile).length > 0 && (
+          <div className="profile-summary">
+            <h3>Your Profile</h3>
+            <div className="profile-grid">
+              {user.profile.age && <div><strong>Age:</strong> {user.profile.age}</div>}
+              {user.profile.gender && <div><strong>Gender:</strong> {user.profile.gender}</div>}
+              {user.profile.height && <div><strong>Height:</strong> {user.profile.height} cm</div>}
+              {user.profile.weight && <div><strong>Weight:</strong> {user.profile.weight} kg</div>}
+              {user.profile.goal_weight && <div><strong>Goal:</strong> {user.profile.goal_weight} kg</div>}
+              {user.profile.activity_level && <div><strong>Activity:</strong> {user.profile.activity_level}</div>}
+            </div>
+          </div>
+        )}
 
         <div className="capture-section">
           <h2 className="section-title">Log Your Meal</h2>
@@ -463,6 +703,10 @@ function App() {
         </div>
       </div>
 
+      {/* Modals */}
+      {showProfile && renderProfileModal()}
+      {showCoachAssignment && renderCoachAssignmentModal()}
+
       {/* Hidden camera elements */}
       <div style={{display: showCamera ? 'block' : 'none'}}>
         {showCamera && (
@@ -505,28 +749,47 @@ function App() {
       <div className="dashboard-content coach-view">
         <div className="users-sidebar">
           <h2 className="section-title">Your Clients</h2>
+          <p className="coach-email-info">Share your email with clients: <strong>{user?.email}</strong></p>
           <div className="users-list">
-            {allUsers.map((u) => (
-              <div 
-                key={u.user_id} 
-                className={`user-item ${selectedUserId === u.user_id ? 'active' : ''}`}
-                onClick={() => {
-                  setSelectedUserId(u.user_id);
-                  fetchUserMeals(u.user_id);
-                }}
-              >
-                <div className="user-info">
-                  <h3>{u.name}</h3>
-                  <p>{u.email}</p>
+            {allUsers.length === 0 ? (
+              <p className="empty-state-small">No clients yet. Share your email with users so they can add you as their coach!</p>
+            ) : (
+              allUsers.map((u) => (
+                <div 
+                  key={u.user_id} 
+                  className={`user-item ${selectedUserId === u.user_id ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedUserId(u.user_id);
+                    fetchUserMeals(u.user_id);
+                  }}
+                >
+                  <div className="user-info">
+                    <h3>{u.name}</h3>
+                    <p>{u.email}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
         <div className="user-details">
           {selectedUserId ? (
             <>
+              {selectedUserInfo && selectedUserInfo.profile && Object.keys(selectedUserInfo.profile).length > 0 && (
+                <div className="client-profile-section">
+                  <h2 className="section-title">Client Profile</h2>
+                  <div className="profile-grid">
+                    {selectedUserInfo.profile.age && <div><strong>Age:</strong> {selectedUserInfo.profile.age}</div>}
+                    {selectedUserInfo.profile.gender && <div><strong>Gender:</strong> {selectedUserInfo.profile.gender}</div>}
+                    {selectedUserInfo.profile.height && <div><strong>Height:</strong> {selectedUserInfo.profile.height} cm</div>}
+                    {selectedUserInfo.profile.weight && <div><strong>Current Weight:</strong> {selectedUserInfo.profile.weight} kg</div>}
+                    {selectedUserInfo.profile.goal_weight && <div><strong>Goal Weight:</strong> {selectedUserInfo.profile.goal_weight} kg</div>}
+                    {selectedUserInfo.profile.activity_level && <div><strong>Activity Level:</strong> {selectedUserInfo.profile.activity_level}</div>}
+                  </div>
+                </div>
+              )}
+
               {userStats && (
                 <div className="stats-section">
                   <h2 className="section-title">Nutrition Stats</h2>

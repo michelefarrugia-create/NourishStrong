@@ -195,7 +195,9 @@ def register(user_data: UserRegister):
         "name": user_data.name,
         "role": user_data.role,
         "created_at": datetime.utcnow().isoformat(),
-        "profile": {}
+        "profile": {},
+        "coach_id": None,  # For users to store their assigned coach
+        "clients": []  # For coaches to store their client IDs
     }
     users_collection.insert_one(user)
     
@@ -233,12 +235,24 @@ def login(user_data: UserLogin):
 
 @app.get("/api/auth/me")
 def get_me(user = Depends(get_current_user)):
+    # Get coach info if user has a coach
+    coach_info = None
+    if user.get("coach_id"):
+        coach = users_collection.find_one({"user_id": user["coach_id"]})
+        if coach:
+            coach_info = {
+                "coach_id": coach["user_id"],
+                "name": coach["name"],
+                "email": coach["email"]
+            }
+    
     return {
         "user_id": user["user_id"],
         "email": user["email"],
         "name": user["name"],
         "role": user["role"],
-        "profile": user.get("profile", {})
+        "profile": user.get("profile", {}),
+        "coach": coach_info
     }
 
 @app.put("/api/profile")
@@ -248,6 +262,60 @@ def update_profile(profile_data: UserProfile, user = Depends(get_current_user)):
         {"$set": {"profile": profile_data.dict(exclude_none=True)}}
     )
     return {"message": "Profile updated successfully"}
+
+@app.post("/api/assign-coach")
+def assign_coach(assignment: CoachAssignment, user = Depends(get_current_user)):
+    # Only regular users can assign coaches
+    if user["role"] != "user":
+        raise HTTPException(status_code=400, detail="Only users can assign coaches")
+    
+    # Find the coach by email
+    coach = users_collection.find_one({"email": assignment.coach_email, "role": "coach"})
+    if not coach:
+        raise HTTPException(status_code=404, detail="Coach not found with this email")
+    
+    # Update user's coach_id
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": {"coach_id": coach["user_id"]}}
+    )
+    
+    # Add user to coach's client list
+    users_collection.update_one(
+        {"user_id": coach["user_id"]},
+        {"$addToSet": {"clients": user["user_id"]}}
+    )
+    
+    return {
+        "message": "Coach assigned successfully",
+        "coach": {
+            "name": coach["name"],
+            "email": coach["email"]
+        }
+    }
+
+@app.delete("/api/remove-coach")
+def remove_coach(user = Depends(get_current_user)):
+    # Only regular users can remove coaches
+    if user["role"] != "user":
+        raise HTTPException(status_code=400, detail="Only users can remove coaches")
+    
+    if not user.get("coach_id"):
+        raise HTTPException(status_code=400, detail="No coach assigned")
+    
+    # Remove user from coach's client list
+    users_collection.update_one(
+        {"user_id": user["coach_id"]},
+        {"$pull": {"clients": user["user_id"]}}
+    )
+    
+    # Remove coach_id from user
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": {"coach_id": None}}
+    )
+    
+    return {"message": "Coach removed successfully"}
 
 @app.post("/api/meals")
 async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
@@ -332,7 +400,13 @@ def delete_meal(meal_id: str, user = Depends(get_current_user)):
 # Coach-only endpoints
 @app.get("/api/coach/users")
 def get_all_users(coach = Depends(require_coach)):
-    users = list(users_collection.find({"role": "user"}))
+    # Get only assigned clients
+    client_ids = coach.get("clients", [])
+    
+    if not client_ids:
+        return {"users": []}
+    
+    users = list(users_collection.find({"user_id": {"$in": client_ids}}))
     
     for user in users:
         user.pop('_id', None)
@@ -342,6 +416,10 @@ def get_all_users(coach = Depends(require_coach)):
 
 @app.get("/api/coach/users/{user_id}/meals")
 def get_user_meals(user_id: str, coach = Depends(require_coach)):
+    # Check if this user is assigned to this coach
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
     # Get user info
     user = users_collection.find_one({"user_id": user_id})
     if not user:
@@ -365,6 +443,10 @@ def get_user_meals(user_id: str, coach = Depends(require_coach)):
 
 @app.get("/api/coach/users/{user_id}/stats")
 def get_user_stats(user_id: str, coach = Depends(require_coach)):
+    # Check if this user is assigned to this coach
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
     meals = list(meals_collection.find({"user_id": user_id}))
     
     total_calories = 0
