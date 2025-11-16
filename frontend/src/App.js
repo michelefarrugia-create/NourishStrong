@@ -78,6 +78,8 @@ function App() {
     intensity: 'moderate',
     notes: ''
   });
+  const [showHealthImport, setShowHealthImport] = useState(false);
+  const [importingHealth, setImportingHealth] = useState(false);
 
   // Check authentication on load
   useEffect(() => {
