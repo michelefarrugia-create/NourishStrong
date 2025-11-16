@@ -108,6 +108,9 @@ function App() {
 
       const challengeData = await apiCall('/api/gamification/challenge');
       setDailyChallenge(challengeData);
+
+      const quoteData = await apiCall('/api/gamification/quote');
+      setDailyQuote(quoteData);
     } catch (err) {
       console.error('Failed to load gamification data:', err);
     }
