@@ -1273,6 +1273,72 @@ def get_user_analytics(user_id: str, coach = Depends(require_coach)):
         "weekly_trend": weekly_data
     }
 
+@app.get("/api/coach/users/{user_id}/activities")
+def get_user_activities(user_id: str, coach = Depends(require_coach)):
+    """Get all activities for a specific user - coach only"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    activities = list(activities_collection.find({"user_id": user_id}).sort("timestamp", -1))
+    
+    for activity in activities:
+        activity.pop('_id', None)
+        if activity["activity_type"] in ACTIVITY_TYPES:
+            activity["activity_info"] = ACTIVITY_TYPES[activity["activity_type"]]
+    
+    return {"activities": activities}
+
+@app.get("/api/coach/users/{user_id}/activity-stats")
+def get_user_activity_stats(user_id: str, coach = Depends(require_coach)):
+    """Get activity statistics for a specific user - coach only"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    activities = list(activities_collection.find({"user_id": user_id}))
+    
+    if not activities:
+        return {
+            "total_activities": 0,
+            "total_calories_burned": 0,
+            "total_minutes": 0,
+            "this_week_activities": 0,
+            "this_week_calories": 0,
+            "this_week_minutes": 0,
+            "favorite_activity": None
+        }
+    
+    now = datetime.utcnow()
+    week_ago = now - timedelta(days=7)
+    
+    total_calories = sum(a["calories_burned"] for a in activities)
+    total_minutes = sum(a["duration_minutes"] for a in activities)
+    
+    this_week = [a for a in activities if datetime.fromisoformat(a["timestamp"]) >= week_ago]
+    this_week_calories = sum(a["calories_burned"] for a in this_week)
+    this_week_minutes = sum(a["duration_minutes"] for a in this_week)
+    
+    # Find favorite activity
+    activity_counts = Counter(a["activity_type"] for a in activities)
+    favorite = activity_counts.most_common(1)[0] if activity_counts else None
+    favorite_activity = None
+    if favorite:
+        favorite_activity = {
+            "type": favorite[0],
+            "count": favorite[1],
+            "name": ACTIVITY_TYPES.get(favorite[0], ACTIVITY_TYPES["other"])["name"],
+            "icon": ACTIVITY_TYPES.get(favorite[0], ACTIVITY_TYPES["other"])["icon"]
+        }
+    
+    return {
+        "total_activities": len(activities),
+        "total_calories_burned": total_calories,
+        "total_minutes": total_minutes,
+        "this_week_activities": len(this_week),
+        "this_week_calories": this_week_calories,
+        "this_week_minutes": this_week_minutes,
+        "favorite_activity": favorite_activity
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
