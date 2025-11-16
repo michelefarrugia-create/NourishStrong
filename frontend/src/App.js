@@ -1059,6 +1059,9 @@ function App() {
       {/* Modals */}
       {showProfile && renderProfileModal()}
       {showCoachAssignment && renderCoachAssignmentModal()}
+      {showBadges && renderBadgesModal()}
+      {showAnalytics && renderAnalyticsModal()}
+      {showProgressPhotos && renderProgressPhotosModal()}
 
       {/* Hidden camera elements */}
       <div style={{display: showCamera ? 'block' : 'none'}}>
