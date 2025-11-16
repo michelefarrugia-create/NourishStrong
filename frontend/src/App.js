@@ -98,6 +98,16 @@ function App() {
     if (token) {
       fetchCurrentUser();
     }
+    
+    // Check for password reset token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    if (tokenFromUrl) {
+      setResetToken(tokenFromUrl);
+      setCurrentView('reset-password');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, [token]);
 
   useEffect(() => {
