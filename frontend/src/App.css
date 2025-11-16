@@ -1,20 +1,40 @@
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
 
 :root {
+  /* Hopeful & Vibrant Color Palette */
   --bg-page: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-section: rgba(243, 234, 255, 0.3);
-  --text-primary: rgb(24, 24, 24);
-  --text-secondary: rgb(112, 112, 112);
-  --text-muted: rgb(143, 143, 143);
-  --border-light: rgba(24, 24, 24, 0.1);
-  --border-medium: rgba(24, 24, 24, 0.2);
-  --border-strong: rgba(24, 24, 24, 0.3);
-  --brand-primary: rgb(0, 128, 255);
-  --brand-hover: rgb(0, 153, 255);
-  --brand-active: rgb(0, 102, 204);
-  --gradient-button: linear-gradient(168deg, rgb(67, 67, 67) -63%, rgb(0, 0, 0) 100%);
-  --gradient-hero: linear-gradient(135deg, rgba(243, 234, 255, 0.8) 0%, rgba(255, 232, 240, 0.8) 25%, rgba(232, 244, 255, 0.8) 50%, rgba(255, 232, 213, 0.8) 75%, rgba(243, 234, 255, 0.8) 100%);
+  --bg-section: rgba(139, 195, 74, 0.08);
+  
+  /* Text Colors */
+  --text-primary: rgb(33, 33, 33);
+  --text-secondary: rgb(97, 97, 97);
+  --text-muted: rgb(158, 158, 158);
+  
+  /* Borders */
+  --border-light: rgba(139, 195, 74, 0.2);
+  --border-medium: rgba(139, 195, 74, 0.35);
+  --border-strong: rgba(139, 195, 74, 0.5);
+  
+  /* Brand Colors - Hopeful & Energetic */
+  --brand-primary: #8BC34A;  /* Fresh Green - Growth & Health */
+  --brand-hover: #7CB342;
+  --brand-active: #689F38;
+  --brand-secondary: #FF9800;  /* Energetic Orange */
+  --brand-accent: #03A9F4;  /* Sky Blue - Hope */
+  --brand-success: #4CAF50;  /* Success Green */
+  --brand-warning: #FFC107;  /* Sunshine Yellow */
+  
+  /* Gradients - Hopeful & Uplifting */
+  --gradient-button: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%);
+  --gradient-button-secondary: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  --gradient-hero: linear-gradient(135deg, 
+    rgba(139, 195, 74, 0.1) 0%, 
+    rgba(3, 169, 244, 0.1) 25%, 
+    rgba(255, 152, 0, 0.1) 50%, 
+    rgba(76, 175, 80, 0.1) 75%, 
+    rgba(139, 195, 74, 0.1) 100%);
+  --gradient-card: linear-gradient(135deg, rgba(139, 195, 74, 0.05), rgba(3, 169, 244, 0.05));
 }
 
 * {
