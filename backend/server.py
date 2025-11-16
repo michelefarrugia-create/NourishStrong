@@ -55,6 +55,30 @@ BADGES = {
     "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
 }
 
+# Motivational quotes
+MOTIVATIONAL_QUOTES = [
+    {"quote": "Every meal logged is a step closer to your goal.", "category": "motivation"},
+    {"quote": "Progress, not perfection. You're doing great!", "category": "encouragement"},
+    {"quote": "Small changes lead to remarkable transformations.", "category": "motivation"},
+    {"quote": "Your journey is unique and beautiful.", "category": "encouragement"},
+    {"quote": "Consistency is the key to lasting change.", "category": "motivation"},
+    {"quote": "Celebrate every small victory along the way.", "category": "encouragement"},
+    {"quote": "You're stronger than you think.", "category": "motivation"},
+    {"quote": "Focus on how you feel, not just the numbers.", "category": "wellness"},
+    {"quote": "Nourish your body with love and intention.", "category": "wellness"},
+    {"quote": "Every day is a fresh start.", "category": "motivation"},
+    {"quote": "Your health journey is a marathon, not a sprint.", "category": "wellness"},
+    {"quote": "Believe in yourself and all that you are.", "category": "encouragement"},
+    {"quote": "You're making positive choices for your future self.", "category": "motivation"},
+    {"quote": "Progress is progress, no matter how small.", "category": "encouragement"},
+    {"quote": "Stay committed to your goals, even on tough days.", "category": "motivation"},
+    {"quote": "Your body is your home. Treat it with respect.", "category": "wellness"},
+    {"quote": "Healthy eating is an act of self-love.", "category": "wellness"},
+    {"quote": "You have the power to change your story.", "category": "motivation"},
+    {"quote": "Trust the process and enjoy the journey.", "category": "encouragement"},
+    {"quote": "Your dedication is inspiring. Keep going!", "category": "encouragement"},
+]
+
 # Models
 class UserRegister(BaseModel):
     email: EmailStr
