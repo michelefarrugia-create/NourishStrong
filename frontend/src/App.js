@@ -1213,6 +1213,7 @@ function App() {
       {showBadges && renderBadgesModal()}
       {showAnalytics && renderAnalyticsModal()}
       {showProgressPhotos && renderProgressPhotosModal()}
+      {showBarcodeScanner && renderBarcodeScannerModal()}
 
       {/* Hidden camera elements */}
       <div style={{display: showCamera ? 'block' : 'none'}}>
