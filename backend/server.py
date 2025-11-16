@@ -663,6 +663,136 @@ Make educated guesses for common products. If it seems like a snack barcode, sug
             "barcode": barcode
         }
 
+@app.get("/api/activities/types")
+def get_activity_types():
+    """Get list of available activity types"""
+    activity_list = []
+    for key, value in ACTIVITY_TYPES.items():
+        activity_list.append({
+            "id": key,
+            "name": value["name"],
+            "icon": value["icon"]
+        })
+    return {"activities": activity_list}
+
+@app.post("/api/activities")
+def log_activity(activity_data: ActivityLog, user = Depends(get_current_user)):
+    """Log a new activity"""
+    # Calculate calories burned
+    calories_burned = calculate_calories_burned(
+        activity_data.activity_type,
+        activity_data.duration_minutes,
+        activity_data.intensity
+    )
+    
+    activity_id = str(uuid.uuid4())
+    activity = {
+        "activity_id": activity_id,
+        "user_id": user["user_id"],
+        "activity_type": activity_data.activity_type,
+        "duration_minutes": activity_data.duration_minutes,
+        "intensity": activity_data.intensity,
+        "calories_burned": calories_burned,
+        "notes": activity_data.notes,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    activities_collection.insert_one(activity)
+    
+    # Check for new badges
+    new_badges = check_and_award_badges(user["user_id"])
+    
+    activity_info = ACTIVITY_TYPES.get(activity_data.activity_type, ACTIVITY_TYPES["other"])
+    
+    response = {
+        "activity_id": activity_id,
+        "message": f"Great workout! {activity_info['icon']} You burned approximately {calories_burned} calories!",
+        "calories_burned": calories_burned,
+        "duration_minutes": activity_data.duration_minutes,
+        "timestamp": activity["timestamp"]
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/activities")
+def get_activities(user = Depends(get_current_user)):
+    """Get user's activity history"""
+    activities = list(activities_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    for activity in activities:
+        activity.pop('_id', None)
+        # Add activity type info
+        if activity["activity_type"] in ACTIVITY_TYPES:
+            activity["activity_info"] = ACTIVITY_TYPES[activity["activity_type"]]
+    
+    return {"activities": activities}
+
+@app.get("/api/activities/stats")
+def get_activity_stats(user = Depends(get_current_user)):
+    """Get activity statistics"""
+    activities = list(activities_collection.find({"user_id": user["user_id"]}))
+    
+    if not activities:
+        return {
+            "total_activities": 0,
+            "total_calories_burned": 0,
+            "total_minutes": 0,
+            "this_week_activities": 0,
+            "this_week_calories": 0,
+            "this_week_minutes": 0,
+            "favorite_activity": None
+        }
+    
+    now = datetime.utcnow()
+    week_ago = now - timedelta(days=7)
+    
+    total_calories = sum(a["calories_burned"] for a in activities)
+    total_minutes = sum(a["duration_minutes"] for a in activities)
+    
+    this_week = [a for a in activities if datetime.fromisoformat(a["timestamp"]) >= week_ago]
+    this_week_calories = sum(a["calories_burned"] for a in this_week)
+    this_week_minutes = sum(a["duration_minutes"] for a in this_week)
+    
+    # Find favorite activity
+    activity_counts = Counter(a["activity_type"] for a in activities)
+    favorite = activity_counts.most_common(1)[0] if activity_counts else None
+    favorite_activity = None
+    if favorite:
+        favorite_activity = {
+            "type": favorite[0],
+            "count": favorite[1],
+            "name": ACTIVITY_TYPES.get(favorite[0], ACTIVITY_TYPES["other"])["name"],
+            "icon": ACTIVITY_TYPES.get(favorite[0], ACTIVITY_TYPES["other"])["icon"]
+        }
+    
+    return {
+        "total_activities": len(activities),
+        "total_calories_burned": total_calories,
+        "total_minutes": total_minutes,
+        "this_week_activities": len(this_week),
+        "this_week_calories": this_week_calories,
+        "this_week_minutes": this_week_minutes,
+        "favorite_activity": favorite_activity
+    }
+
+@app.delete("/api/activities/{activity_id}")
+def delete_activity(activity_id: str, user = Depends(get_current_user)):
+    """Delete an activity"""
+    activity = activities_collection.find_one({"activity_id": activity_id})
+    
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    
+    if activity["user_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    activities_collection.delete_one({"activity_id": activity_id})
+    return {"message": "Activity deleted successfully"}
+
 @app.get("/api/analytics/overview")
 def get_analytics_overview(user = Depends(get_current_user)):
     meals = list(meals_collection.find({"user_id": user["user_id"]}))
