@@ -1715,8 +1715,6 @@ function App() {
       {showAnalytics && renderAnalyticsModal()}
       {showProgressPhotos && renderProgressPhotosModal()}
       {showBarcodeScanner && renderBarcodeScannerModal()}
-      {showActivityLogger && renderActivityLoggerModal()}
-      {showHealthImport && renderHealthImportModal()}
 
       {/* Hidden camera elements */}
       <div style={{display: showCamera ? 'block' : 'none'}}>
