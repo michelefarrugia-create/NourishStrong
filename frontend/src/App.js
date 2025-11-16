@@ -1179,7 +1179,10 @@ function App() {
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-content">
-          <h1>Your Journey</h1>
+          <div className="dashboard-brand">
+            <h1>NourishStrong</h1>
+            <span className="dashboard-tagline">Your Wellness Journey</span>
+          </div>
           <div className="header-actions">
             <span className="user-name">Hi, {user?.name}!</span>
             <button onClick={() => setShowProfile(true)} className="btn-secondary">Profile</button>
