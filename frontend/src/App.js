@@ -381,6 +381,14 @@ function App() {
       setCapturedImage(null);
       setMealNotes('');
       fetchMeals();
+      fetchGameificationData();
+      fetchAnalytics();
+      
+      // Check for new badges and celebrations
+      if (data.new_badges && data.new_badges.length > 0) {
+        setNewBadgesCelebration(data.new_badges);
+        setTimeout(() => setNewBadgesCelebration([]), 5000);
+      }
       
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
