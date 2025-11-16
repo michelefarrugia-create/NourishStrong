@@ -353,10 +353,6 @@ def check_and_award_badges(user_id: str) -> List[str]:
     meal_count = len(meals)
     streak = calculate_streak(user_id)
     
-    # Get activity stats
-    activities = list(activities_collection.find({"user_id": user_id}))
-    activity_count = len(activities)
-    
     # Check badge conditions
     if meal_count >= 1 and "first_meal" not in current_badges:
         new_badges.append("first_meal")
