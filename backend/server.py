@@ -148,6 +148,10 @@ class ActivityLog(BaseModel):
     intensity: str  # low, moderate, high
     notes: Optional[str] = ""
 
+class HealthDataImport(BaseModel):
+    file_type: str  # "apple_health" or "google_fit"
+    file_content: str  # base64 encoded file content
+
 # Helper functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
