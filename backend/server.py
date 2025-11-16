@@ -958,20 +958,8 @@ Make educated guesses for common products. If it seems like a snack barcode, sug
             "barcode": barcode
         }
 
-@app.get("/api/activities/types")
-def get_activity_types():
-    """Get list of available activity types"""
-    activity_list = []
-    for key, value in ACTIVITY_TYPES.items():
-        activity_list.append({
-            "id": key,
-            "name": value["name"],
-            "icon": value["icon"]
-        })
-    return {"activities": activity_list}
-
-@app.post("/api/activities")
-def log_activity(activity_data: ActivityLog, user = Depends(get_current_user)):
+@app.get("/api/analytics/overview")
+def get_analytics_overview(user = Depends(get_current_user)):
     """Log a new activity"""
     # Calculate calories burned
     calories_burned = calculate_calories_burned(
