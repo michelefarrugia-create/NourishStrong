@@ -1558,15 +1558,19 @@ function App() {
                     </span>
                     <div className="activity-details">
                       <h4>{activity.activity_info?.name || activity.activity_type}</h4>
-                      <p className="activity-duration">{activity.duration_minutes} minutes • {activity.intensity} intensity</p>
+                      {user?.role === 'coach' && (
+                        <p className="activity-duration">{activity.duration_minutes} minutes • {activity.intensity} intensity</p>
+                      )}
                     </div>
                   </div>
-                  <div className="activity-stats">
-                    <div className="activity-stat">
-                      <span className="activity-stat-icon">🔥</span>
-                      <span>{activity.calories_burned} cal</span>
+                  {user?.role === 'coach' && activity.calories_burned && (
+                    <div className="activity-stats">
+                      <div className="activity-stat">
+                        <span className="activity-stat-icon">🔥</span>
+                        <span>{activity.calories_burned} cal</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="meal-info">
                     <p className="meal-time">{new Date(activity.timestamp).toLocaleString()}</p>
                     {activity.notes && <p className="meal-notes">{activity.notes}</p>}
