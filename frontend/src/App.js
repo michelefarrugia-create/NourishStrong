@@ -628,8 +628,11 @@ function App() {
   const renderLogin = () => (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">Continue your weight loss journey</p>
+        <div className="brand-header">
+          <h1 className="auth-title">NourishStrong</h1>
+          <p className="brand-tagline">Your Journey to Wellness</p>
+        </div>
+        <p className="auth-subtitle">Continue your wellness journey</p>
         
         {error && <div className="error-message">{error}</div>}
         
@@ -668,7 +671,10 @@ function App() {
   const renderRegister = () => (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">Create Account</h1>
+        <div className="brand-header">
+          <h1 className="auth-title">NourishStrong</h1>
+          <p className="brand-tagline">Your Journey to Wellness</p>
+        </div>
         <p className="auth-subtitle">Start your wellness journey today</p>
         
         {error && <div className="error-message">{error}</div>}
