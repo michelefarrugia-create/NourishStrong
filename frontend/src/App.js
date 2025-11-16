@@ -1949,8 +1949,7 @@ function App() {
     if (currentView === 'register') return renderRegister();
     if (currentView === 'forgot-password') return renderForgotPassword();
     if (currentView === 'reset-password') return renderResetPassword();
-    if (currentView === 'about') return renderAbout();
-    return renderLogin();
+    return renderLanding(); // Landing page is the default
   }
 
   if (!user) {
