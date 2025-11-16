@@ -1119,14 +1119,15 @@ body {
 
 /* Motivational Quote Card */
 .motivational-quote-card {
-  background: linear-gradient(135deg, rgba(232, 244, 255, 0.9), rgba(243, 234, 255, 0.9));
-  border: 1px solid var(--border-light);
+  background: linear-gradient(135deg, rgba(139, 195, 74, 0.2), rgba(3, 169, 244, 0.2));
+  border: 2px solid var(--brand-primary);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(139, 195, 74, 0.2);
 }
 
 .motivational-quote-card::before {
@@ -1136,7 +1137,7 @@ body {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
   animation: quoteShine 3s ease-in-out infinite;
 }
 
