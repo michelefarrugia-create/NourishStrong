@@ -195,6 +195,54 @@ backend:
         agent: "testing"
         comment: "TESTED: All coach endpoints working correctly. GET /api/coach/users returns list of users. GET /api/coach/users/{user_id}/meals shows user meals with full nutrition data visible to coaches. GET /api/coach/users/{user_id}/stats provides aggregate nutrition statistics. All endpoints properly restricted to coach role only."
 
+  - task: "Password strength validation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented password strength validation function that requires min 8 chars and at least 3 of: uppercase, lowercase, number, special character. Added validation to register and reset password endpoints. Returns strength levels: weak, good, strong."
+
+  - task: "SendGrid email integration"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Integrated SendGrid for sending emails. Created send_email, send_welcome_email, and send_password_reset_email functions. Welcome email sent on registration, reset email sent for password recovery."
+
+  - task: "Forgot password flow"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented POST /api/auth/forgot-password endpoint that generates reset token, stores it in MongoDB with 1-hour expiry, and sends reset email with link. Secure - doesn't reveal if email exists."
+
+  - task: "Reset password flow"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented POST /api/auth/reset-password endpoint that validates token, checks expiry, validates password strength, updates user password, and marks token as used. One-time use tokens with proper expiration."
+
 frontend:
   - task: "Authentication UI (login/register pages)"
     implemented: true
