@@ -232,9 +232,13 @@ class UserProfile(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
     height: Optional[float] = None
-    weight: Optional[float] = None
     activity_level: Optional[str] = None
     goal_weight: Optional[float] = None
+    profile_picture: Optional[str] = None  # base64 image
+
+class WeightLog(BaseModel):
+    weight: float
+    notes: Optional[str] = ""
 
 class CoachAssignment(BaseModel):
     coach_email: str
