@@ -127,16 +127,6 @@ class ProgressPhoto(BaseModel):
 class DailyChallengeComplete(BaseModel):
     challenge_id: str
 
-class ActivityLog(BaseModel):
-    activity_type: str
-    duration_minutes: int
-    intensity: str  # low, moderate, high
-    notes: Optional[str] = ""
-
-class HealthDataImport(BaseModel):
-    file_type: str  # "apple_health" or "google_fit"
-    file_content: str  # base64 encoded file content
-
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
