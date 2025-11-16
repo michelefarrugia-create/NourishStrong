@@ -113,6 +113,12 @@ class ProgressPhoto(BaseModel):
 class DailyChallengeComplete(BaseModel):
     challenge_id: str
 
+class ActivityLog(BaseModel):
+    activity_type: str
+    duration_minutes: int
+    intensity: str  # low, moderate, high
+    notes: Optional[str] = ""
+
 # Helper functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
