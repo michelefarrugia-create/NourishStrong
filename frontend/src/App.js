@@ -61,6 +61,11 @@ function App() {
   const [capturedProgressPhoto, setCapturedProgressPhoto] = useState(null);
   const [progressPhotoWeight, setProgressPhotoWeight] = useState('');
   const [progressPhotoNotes, setProgressPhotoNotes] = useState('');
+  const [dailyQuote, setDailyQuote] = useState(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [barcodeResult, setBarcodeResult] = useState(null);
+  const [scanningBarcode, setScanningBarcode] = useState(false);
 
   // Check authentication on load
   useEffect(() => {
