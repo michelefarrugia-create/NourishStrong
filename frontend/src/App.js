@@ -360,6 +360,61 @@ function App() {
     }
   };
 
+  const handleBarcodeScann = async () => {
+    if (!barcodeInput || barcodeInput.length < 8) {
+      setError('Please enter a valid barcode (at least 8 digits)');
+      return;
+    }
+
+    setScanningBarcode(true);
+    setError('');
+
+    try {
+      const data = await apiCall('/api/barcode-scan', 'POST', {
+        barcode: barcodeInput
+      });
+
+      if (data.success) {
+        setBarcodeResult(data.product);
+        setSuccess(`Found: ${data.product.food_name}!`);
+      } else {
+        setError(data.message);
+        setBarcodeResult(null);
+      }
+    } catch (err) {
+      setError('Failed to scan barcode. Please try again.');
+      setBarcodeResult(null);
+    } finally {
+      setScanningBarcode(false);
+    }
+  };
+
+  const addBarcodeProduct = () => {
+    if (!barcodeResult) return;
+
+    // Create a virtual image for the barcode product
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    
+    // Create a simple placeholder image
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(0, 0, 400, 300);
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(barcodeResult.food_name, 200, 150);
+    ctx.font = '16px Arial';
+    ctx.fillText(barcodeResult.brand || 'Scanned Product', 200, 180);
+    
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    setCapturedImage(imageData);
+    setShowBarcodeScanner(false);
+    setBarcodeInput('');
+    setBarcodeResult(null);
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
