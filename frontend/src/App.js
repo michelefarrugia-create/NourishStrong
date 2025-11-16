@@ -1219,6 +1219,11 @@ function App() {
             </div>
           </div>
 
+          <button onClick={() => setShowActivityLogger(true)} className="quick-action-btn">
+            <span>🏃</span>
+            <span>Log Activity</span>
+          </button>
+
           <button onClick={() => setShowProgressPhotos(true)} className="quick-action-btn">
             <span>📸</span>
             <span>Progress</span>
@@ -1229,6 +1234,36 @@ function App() {
             <span>Insights</span>
           </button>
         </div>
+
+        {/* Activity Stats Summary */}
+        {activityStats && activityStats.total_activities > 0 && (
+          <div className="activity-stats-summary">
+            <h3>This Week's Activity</h3>
+            <div className="stats-quick-view">
+              <div className="stat-item">
+                <span className="stat-icon">🏃</span>
+                <div>
+                  <span className="stat-number">{activityStats.this_week_activities}</span>
+                  <span className="stat-label">workouts</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <span className="stat-icon">🔥</span>
+                <div>
+                  <span className="stat-number">{activityStats.this_week_calories}</span>
+                  <span className="stat-label">calories burned</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <span className="stat-icon">⏱️</span>
+                <div>
+                  <span className="stat-number">{activityStats.this_week_minutes}</span>
+                  <span className="stat-label">minutes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Daily Challenge */}
         {dailyChallenge && !dailyChallenge.completed && (
