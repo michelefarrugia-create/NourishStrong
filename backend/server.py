@@ -40,7 +40,6 @@ users_collection = db['users']
 meals_collection = db['meals']
 progress_photos_collection = db['progress_photos']
 challenges_collection = db['challenges']
-activities_collection = db['activities']
 weight_logs_collection = db['weight_logs']
 password_reset_tokens_collection = db['password_reset_tokens']
 
