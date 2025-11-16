@@ -123,33 +123,6 @@ function App() {
     }
   }, [user]);
 
-  const fetchActivityTypes = async () => {
-    try {
-      const data = await apiCall('/api/activities/types');
-      setActivityTypes(data.activities);
-    } catch (err) {
-      console.error('Failed to load activity types:', err);
-    }
-  };
-
-  const fetchActivities = async () => {
-    try {
-      const data = await apiCall('/api/activities');
-      setActivities(data.activities);
-    } catch (err) {
-      console.error('Failed to load activities:', err);
-    }
-  };
-
-  const fetchActivityStats = async () => {
-    try {
-      const data = await apiCall('/api/activities/stats');
-      setActivityStats(data);
-    } catch (err) {
-      console.error('Failed to load activity stats:', err);
-    }
-  };
-
   const fetchGameificationData = async () => {
     try {
       const streakData = await apiCall('/api/gamification/streak');
