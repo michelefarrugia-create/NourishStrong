@@ -796,8 +796,8 @@ body {
 
 /* Daily Challenge */
 .daily-challenge-card {
-  background: linear-gradient(135deg, rgba(243, 234, 255, 0.8), rgba(232, 244, 255, 0.8));
-  border: 1px solid var(--border-light);
+  background: linear-gradient(135deg, rgba(139, 195, 74, 0.15), rgba(3, 169, 244, 0.15));
+  border: 2px solid var(--brand-primary);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -837,12 +837,13 @@ body {
 
 /* Celebration Banner */
 .celebration-banner {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #FFD54F, #FF9800, #FF6F00);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
   text-align: center;
   animation: celebrationPulse 0.5s ease;
+  box-shadow: 0 8px 24px rgba(255, 152, 0, 0.3);
 }
 
 @keyframes celebrationPulse {
