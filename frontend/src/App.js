@@ -66,6 +66,18 @@ function App() {
   const [barcodeInput, setBarcodeInput] = useState('');
   const [barcodeResult, setBarcodeResult] = useState(null);
   const [scanningBarcode, setScanningBarcode] = useState(false);
+  
+  // Activity tracking state
+  const [showActivityLogger, setShowActivityLogger] = useState(false);
+  const [activityTypes, setActivityTypes] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [activityStats, setActivityStats] = useState(null);
+  const [activityForm, setActivityForm] = useState({
+    activity_type: 'walking',
+    duration_minutes: '',
+    intensity: 'moderate',
+    notes: ''
+  });
 
   // Check authentication on load
   useEffect(() => {
