@@ -110,10 +110,13 @@ function App() {
             age: user.profile.age || '',
             gender: user.profile.gender || '',
             height: user.profile.height || '',
-            weight: user.profile.weight || '',
             activity_level: user.profile.activity_level || '',
-            goal_weight: user.profile.goal_weight || ''
+            goal_weight: user.profile.goal_weight || '',
+            profile_picture: user.profile.profile_picture || null
           });
+          if (user.profile.profile_picture) {
+            setProfilePicturePreview(`data:image/jpeg;base64,${user.profile.profile_picture}`);
+          }
         }
       }
     }
