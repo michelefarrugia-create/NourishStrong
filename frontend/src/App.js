@@ -727,38 +727,38 @@ function App() {
                 <p className="analytics-value">{analytics.meals_this_week}</p>
                 <p className="analytics-label">meals logged</p>
               </div>
-              <div className=\"analytics-card\">
+              <div className="analytics-card">
                 <h4>This Month</h4>
-                <p className=\"analytics-value\">{analytics.meals_this_month}</p>
-                <p className=\"analytics-label\">meals logged</p>
+                <p className="analytics-value">{analytics.meals_this_month}</p>
+                <p className="analytics-label">meals logged</p>
               </div>
-              <div className=\"analytics-card\">
+              <div className="analytics-card">
                 <h4>Total</h4>
-                <p className=\"analytics-value\">{analytics.total_meals}</p>
-                <p className=\"analytics-label\">all time</p>
+                <p className="analytics-value">{analytics.total_meals}</p>
+                <p className="analytics-label">all time</p>
               </div>
             </div>
 
-            <div className=\"analytics-section\">
+            <div className="analytics-section">
               <h3>Weekly Trend</h3>
-              <div className=\"weekly-chart\">
+              <div className="weekly-chart">
                 {analytics.weekly_trend.map((day) => (
-                  <div key={day.date} className=\"chart-bar\">
-                    <div className=\"bar\" style={{height: `${day.meals * 30}px`}}>
-                      <span className=\"bar-value\">{day.meals}</span>
+                  <div key={day.date} className="chart-bar">
+                    <div className="bar" style={{height: `${day.meals * 30}px`}}>
+                      <span className="bar-value">{day.meals}</span>
                     </div>
-                    <span className=\"bar-label\">{day.day_name}</span>
+                    <span className="bar-label">{day.day_name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {analytics.meal_times && analytics.meal_times.length > 0 && (
-              <div className=\"analytics-section\">
+              <div className="analytics-section">
                 <h3>Most Common Meal Times</h3>
-                <div className=\"meal-times-list\">
+                <div className="meal-times-list">
                   {analytics.meal_times.map((time, index) => (
-                    <div key={index} className=\"meal-time-item\">
+                    <div key={index} className="meal-time-item">
                       <span>{time.hour}:00</span>
                       <span>{time.count} meals</span>
                     </div>
