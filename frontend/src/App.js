@@ -105,9 +105,6 @@ function App() {
         fetchGameificationData();
         fetchAnalytics();
         fetchProgressPhotos();
-        fetchActivityTypes();
-        fetchActivities();
-        fetchActivityStats();
         // Load profile data
         if (user.profile) {
           setProfileData({
