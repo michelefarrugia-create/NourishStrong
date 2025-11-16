@@ -1142,6 +1142,40 @@ body {
     width: 100%;
     justify-content: space-between;
   }
+
+  .gamification-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .streak-display, .badges-display {
+    min-width: 100%;
+  }
+
+  .daily-challenge-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .challenge-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .challenge-btn {
+    width: 100%;
+  }
+
+  .badges-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-photos-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
