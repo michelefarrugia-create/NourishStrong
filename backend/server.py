@@ -63,10 +63,6 @@ BADGES = {
     "meals_100": {"name": "Century Club", "description": "Logged 100 meals", "icon": "🏆"},
     "early_bird": {"name": "Early Bird", "description": "Logged breakfast before 9am", "icon": "🌅"},
     "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
-    "first_activity": {"name": "Active Start", "description": "Logged your first activity", "icon": "🏃"},
-    "activity_10": {"name": "Moving Forward", "description": "Logged 10 activities", "icon": "🚴"},
-    "activity_50": {"name": "Fitness Enthusiast", "description": "Logged 50 activities", "icon": "🏋️"},
-    "marathon": {"name": "Marathon Master", "description": "Logged 5+ hours of activity in a week", "icon": "🎖️"},
 }
 
 # Activity types with calorie burn rates (calories per minute based on moderate intensity)
