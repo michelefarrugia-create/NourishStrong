@@ -266,6 +266,38 @@ function App() {
     }
   };
 
+  const checkPasswordStrength = (pwd) => {
+    if (!pwd || pwd.length === 0) {
+      setPasswordStrength({ valid: true, message: '', strength: '' });
+      return;
+    }
+    
+    if (pwd.length < 8) {
+      setPasswordStrength({ valid: false, message: 'At least 8 characters required', strength: 'weak' });
+      return;
+    }
+    
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasDigit = /\d/.test(pwd);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+    
+    const strengthCount = [hasUpper, hasLower, hasDigit, hasSpecial].filter(Boolean).length;
+    
+    if (strengthCount < 3) {
+      const missing = [];
+      if (!hasUpper) missing.push('uppercase');
+      if (!hasLower) missing.push('lowercase');
+      if (!hasDigit) missing.push('number');
+      if (!hasSpecial) missing.push('special char');
+      setPasswordStrength({ valid: false, message: `Needs: ${missing.slice(0, 2).join(', ')}`, strength: 'weak' });
+    } else if (strengthCount === 3) {
+      setPasswordStrength({ valid: true, message: 'Good password', strength: 'good' });
+    } else {
+      setPasswordStrength({ valid: true, message: 'Strong password', strength: 'strong' });
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
