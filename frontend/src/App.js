@@ -516,6 +516,50 @@ function App() {
     }
   };
 
+  const handleHealthFileImport = async (e, fileType) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImportingHealth(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Content = reader.result.split(',')[1];
+        
+        const data = await apiCall('/api/activities/import', 'POST', {
+          file_type: fileType,
+          file_content: base64Content
+        });
+
+        if (data.success) {
+          setSuccess(data.message);
+          setShowHealthImport(false);
+          fetchActivities();
+          fetchActivityStats();
+          fetchGameificationData();
+
+          // Check for new badges
+          if (data.new_badges && data.new_badges.length > 0) {
+            setNewBadgesCelebration(data.new_badges);
+            setTimeout(() => setNewBadgesCelebration([]), 5000);
+          }
+        } else {
+          setError(data.message);
+        }
+
+        setImportingHealth(false);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setError(err.message);
+      setImportingHealth(false);
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
