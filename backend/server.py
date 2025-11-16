@@ -901,6 +901,81 @@ def delete_activity(activity_id: str, user = Depends(get_current_user)):
     activities_collection.delete_one({"activity_id": activity_id})
     return {"message": "Activity deleted successfully"}
 
+@app.post("/api/activities/import")
+def import_health_data(import_data: HealthDataImport, user = Depends(get_current_user)):
+    """Import activities from Apple Health XML or Google Fit CSV"""
+    import base64
+    
+    try:
+        # Decode file content
+        file_content = base64.b64decode(import_data.file_content).decode('utf-8')
+        
+        # Parse based on file type
+        if import_data.file_type == "apple_health":
+            activities_data = parse_apple_health_xml(file_content)
+        elif import_data.file_type == "google_fit":
+            activities_data = parse_google_fit_csv(file_content)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid file type")
+        
+        if not activities_data:
+            return {
+                "success": False,
+                "message": "No activities found in the file. Make sure it's a valid export.",
+                "imported_count": 0
+            }
+        
+        # Import activities
+        imported_count = 0
+        new_badges = []
+        
+        for activity_data in activities_data:
+            # Calculate calories
+            calories = calculate_calories_burned(
+                activity_data["activity_type"],
+                activity_data["duration_minutes"],
+                activity_data["intensity"]
+            )
+            
+            activity_id = str(uuid.uuid4())
+            activity = {
+                "activity_id": activity_id,
+                "user_id": user["user_id"],
+                "activity_type": activity_data["activity_type"],
+                "duration_minutes": activity_data["duration_minutes"],
+                "intensity": activity_data["intensity"],
+                "calories_burned": calories,
+                "notes": f"Imported from {activity_data['source']}",
+                "timestamp": activity_data.get("timestamp", datetime.utcnow().isoformat()),
+                "created_at": datetime.utcnow().isoformat(),
+                "imported": True
+            }
+            activities_collection.insert_one(activity)
+            imported_count += 1
+        
+        # Check for new badges after import
+        new_badges = check_and_award_badges(user["user_id"])
+        
+        response = {
+            "success": True,
+            "message": f"Successfully imported {imported_count} activities! 🎉",
+            "imported_count": imported_count
+        }
+        
+        if new_badges:
+            response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+            response["celebration"] = True
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error importing health data: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Failed to import: {str(e)}",
+            "imported_count": 0
+        }
+
 @app.get("/api/analytics/overview")
 def get_analytics_overview(user = Depends(get_current_user)):
     meals = list(meals_collection.find({"user_id": user["user_id"]}))
