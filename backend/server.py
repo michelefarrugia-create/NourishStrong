@@ -812,13 +812,21 @@ def log_activity(activity_data: ActivityLog, user = Depends(get_current_user)):
     
     activity_info = ACTIVITY_TYPES.get(activity_data.activity_type, ACTIVITY_TYPES["other"])
     
-    response = {
-        "activity_id": activity_id,
-        "message": f"Great workout! {activity_info['icon']} You burned approximately {calories_burned} calories!",
-        "calories_burned": calories_burned,
-        "duration_minutes": activity_data.duration_minutes,
-        "timestamp": activity["timestamp"]
-    }
+    # Don't show calories to regular users
+    if user["role"] == "user":
+        response = {
+            "activity_id": activity_id,
+            "message": f"Great workout! {activity_info['icon']} Keep up the amazing work!",
+            "timestamp": activity["timestamp"]
+        }
+    else:
+        response = {
+            "activity_id": activity_id,
+            "message": f"Great workout! {activity_info['icon']} You burned approximately {calories_burned} calories!",
+            "calories_burned": calories_burned,
+            "duration_minutes": activity_data.duration_minutes,
+            "timestamp": activity["timestamp"]
+        }
     
     if new_badges:
         response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
