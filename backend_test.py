@@ -12,7 +12,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://nourish-track.preview.emergentagent.com/api"
+BASE_URL = "https://weight-wellness-4.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 class Colors:

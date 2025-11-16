@@ -7,7 +7,7 @@ import requests
 import json
 import base64
 
-BASE_URL = "https://nourish-track.preview.emergentagent.com/api"
+BASE_URL = "https://weight-wellness-4.preview.emergentagent.com/api"
 
 def create_sample_food_image():
     """Create a simple base64 encoded image for testing"""

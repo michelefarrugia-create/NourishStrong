@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://nourish-track.preview.emergentagent.com/api"
+BASE_URL = "https://weight-wellness-4.preview.emergentagent.com/api"
 
 def test_step_by_step():
     print("Testing step by step...")
