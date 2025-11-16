@@ -20,6 +20,14 @@ function App() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('user');
+  
+  // Password strength state
+  const [passwordStrength, setPasswordStrength] = useState({ valid: true, message: '', strength: '' });
+  
+  // Forgot password state
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   // Profile state
   const [showProfile, setShowProfile] = useState(false);
