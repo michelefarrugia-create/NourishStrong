@@ -12,6 +12,9 @@ function App() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Main view state - 'dashboard' or 'profile'
+  const [mainView, setMainView] = useState('dashboard');
+
   // Login/Register state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
