@@ -1372,7 +1372,7 @@ function App() {
         </div>
 
         {/* Activity Stats Summary */}
-        {activityStats && activityStats.total_activities > 0 && (
+        {user?.role === 'coach' && activityStats && activityStats.total_activities > 0 && (
           <div className="activity-stats-summary">
             <h3>This Week's Activity</h3>
             <div className="stats-quick-view">
