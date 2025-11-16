@@ -1497,7 +1497,10 @@ function App() {
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-content">
-          <h1>Coach Dashboard</h1>
+          <div className="dashboard-brand">
+            <h1>NourishStrong Coach</h1>
+            <span className="dashboard-tagline">Support & Guide</span>
+          </div>
           <div className="header-actions">
             <span className="user-name">Coach {user?.name}</span>
             <button onClick={logout} className="btn-secondary">Logout</button>
