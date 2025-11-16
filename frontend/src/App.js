@@ -731,52 +731,134 @@ function App() {
     </div>
   );
 
-  const renderAbout = () => (
-    <div className="auth-container">
-      <div className="auth-card" style={{maxWidth: '700px'}}>
-        <div className="brand-header">
-          <h1 className="auth-title">About NourishStrong</h1>
-          <p className="brand-tagline">Your Wellness Journey, Your Way</p>
+  const renderLanding = () => (
+    <div className="landing-page">
+      {/* Hero Section */}
+      <section className="hero-section" style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1762165876555-b7a6b9e4aed5)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative'
+      }}>
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <h1 className="hero-title">Your Journey to Wellness Starts Here</h1>
+          <p className="hero-subtitle">
+            Transform your relationship with food through mindful eating, supportive coaching, and positive reinforcement
+          </p>
+          <div className="hero-actions">
+            <button onClick={() => setCurrentView('register')} className="btn-hero-primary">
+              Get Started Free
+            </button>
+            <button onClick={() => setCurrentView('login')} className="btn-hero-secondary">
+              Sign In
+            </button>
+          </div>
         </div>
-        
-        <div style={{textAlign: 'left', padding: '20px', lineHeight: '1.8'}}>
-          <h2 style={{color: '#2D5F3F', marginTop: '20px'}}>Our Mission 🌱</h2>
-          <p>
-            NourishStrong is designed to support your weight loss and wellness journey 
-            through mindful eating and positive reinforcement, not numbers obsession.
-          </p>
-          
-          <h2 style={{color: '#2D5F3F', marginTop: '30px'}}>How It Works 💪</h2>
-          <ul style={{paddingLeft: '20px'}}>
-            <li><strong>AI-Powered Meal Tracking:</strong> Simply snap a photo of your meal, and our AI analyzes the nutrition</li>
-            <li><strong>Privacy First:</strong> Sensitive data (calories, macros, weight) are hidden from you and only visible to your coach</li>
-            <li><strong>Gamification:</strong> Earn badges, maintain streaks, and complete daily challenges</li>
-            <li><strong>Activity Tracking:</strong> Log exercises and sync health data from Apple Health or Google Fit</li>
-            <li><strong>Coach Support:</strong> Connect with a coach or supporter who can guide your journey</li>
-          </ul>
-          
-          <h2 style={{color: '#2D5F3F', marginTop: '30px'}}>Why NourishStrong? ✨</h2>
-          <p>
-            Traditional calorie-tracking apps can foster unhealthy relationships with food. 
-            NourishStrong takes a different approach by focusing on:
-          </p>
-          <ul style={{paddingLeft: '20px'}}>
-            <li>Building healthy habits, not counting numbers</li>
-            <li>Celebrating progress and small victories</li>
-            <li>Fostering supportive relationships with coaches</li>
-            <li>Promoting mindful eating and self-care</li>
-          </ul>
-          
-          <p style={{marginTop: '30px', padding: '20px', backgroundColor: '#f4f4f4', borderRadius: '10px', textAlign: 'center'}}>
-            <strong>Ready to start your journey?</strong><br/>
-            Join NourishStrong today and take the first step toward a healthier, stronger you! 🎯
+      </section>
+
+      {/* Mission Section */}
+      <section className="mission-section">
+        <div className="container">
+          <h2 className="section-title">Our Mission 🌱</h2>
+          <p className="section-text">
+            NourishStrong helps you build a healthier, happier relationship with food. 
+            We focus on progress, not perfection—celebrating every small win along your wellness journey.
           </p>
         </div>
-        
-        <button onClick={() => setCurrentView('login')} className="btn-primary" style={{marginTop: '20px'}}>
-          Get Started
-        </button>
-      </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features-section">
+        <div className="container">
+          <h2 className="section-title">How NourishStrong Works</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">📸</div>
+              <h3>AI-Powered Meal Tracking</h3>
+              <p>Simply snap a photo of your meal. Our AI analyzes nutrition so you can focus on mindful eating.</p>
+            </div>
+            
+            <div className="feature-card">
+              <div className="feature-icon">🔒</div>
+              <h3>Privacy First</h3>
+              <p>Numbers stay private. Your coach sees the data, you focus on building healthy habits.</p>
+            </div>
+            
+            <div className="feature-card">
+              <div className="feature-icon">🏆</div>
+              <h3>Celebrate Progress</h3>
+              <p>Earn badges, build streaks, and complete daily challenges that keep you motivated.</p>
+            </div>
+            
+            <div className="feature-card">
+              <div className="feature-icon">👥</div>
+              <h3>Coach Support</h3>
+              <p>Connect with a dedicated coach who guides, motivates, and celebrates your journey.</p>
+            </div>
+            
+            <div className="feature-card">
+              <div className="feature-icon">📊</div>
+              <h3>Track Your Journey</h3>
+              <p>See your meal timing patterns, mood trends, and progress over time.</p>
+            </div>
+            
+            <div className="feature-card">
+              <div className="feature-icon">🎯</div>
+              <h3>Earn Rewards</h3>
+              <p>Collect points for consistency, unlock achievements, and reach milestones.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Journey Section */}
+      <section className="journey-section" style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1492176273113-2d51f47b23b0)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
+        <div className="journey-overlay"></div>
+        <div className="container journey-content">
+          <h2 className="section-title-white">Why Choose NourishStrong?</h2>
+          <div className="why-grid">
+            <div className="why-item">
+              <h4>🌟 Build Healthy Habits</h4>
+              <p>Not just counting—focus on sustainable lifestyle changes</p>
+            </div>
+            <div className="why-item">
+              <h4>💚 Positive Reinforcement</h4>
+              <p>Celebrate victories, not perfection</p>
+            </div>
+            <div className="why-item">
+              <h4>🤝 Expert Guidance</h4>
+              <p>Personal coach support every step of the way</p>
+            </div>
+            <div className="why-item">
+              <h4>🧘 Mindful Approach</h4>
+              <p>Develop awareness without obsession</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-section">
+        <div className="container">
+          <h2 className="cta-title">Ready to Transform Your Journey?</h2>
+          <p className="cta-text">
+            Join NourishStrong today and discover a supportive, sustainable path to wellness
+          </p>
+          <button onClick={() => setCurrentView('register')} className="btn-cta">
+            Start Your Journey Free
+          </button>
+          <p className="cta-small">Already have an account? 
+            <button onClick={() => setCurrentView('login')} className="link-button" style={{marginLeft: '8px'}}>
+              Sign In
+            </button>
+          </p>
+        </div>
+      </section>
     </div>
   );
 
