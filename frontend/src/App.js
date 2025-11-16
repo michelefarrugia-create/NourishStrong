@@ -2161,7 +2161,12 @@ function App() {
 
   // Main render
   if (!token) {
-    return currentView === 'login' ? renderLogin() : renderRegister();
+    if (currentView === 'login') return renderLogin();
+    if (currentView === 'register') return renderRegister();
+    if (currentView === 'forgot-password') return renderForgotPassword();
+    if (currentView === 'reset-password') return renderResetPassword();
+    if (currentView === 'about') return renderAbout();
+    return renderLogin();
   }
 
   if (!user) {
