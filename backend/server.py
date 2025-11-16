@@ -828,7 +828,7 @@ def log_activity(activity_data: ActivityLog, user = Depends(get_current_user)):
 
 @app.get("/api/activities")
 def get_activities(user = Depends(get_current_user)):
-    """Get user's activity history"""
+    """Get user's activity history - hide details from regular users"""
     activities = list(activities_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
     
     for activity in activities:
@@ -836,6 +836,12 @@ def get_activities(user = Depends(get_current_user)):
         # Add activity type info
         if activity["activity_type"] in ACTIVITY_TYPES:
             activity["activity_info"] = ACTIVITY_TYPES[activity["activity_type"]]
+        
+        # Hide calories and detailed stats from regular users
+        if user["role"] != "coach":
+            activity.pop('calories_burned', None)
+            activity.pop('duration_minutes', None)
+            activity.pop('intensity', None)
     
     return {"activities": activities}
 
