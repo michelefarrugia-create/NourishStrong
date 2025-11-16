@@ -453,38 +453,88 @@ def generate_daily_challenge(user_id: str) -> dict:
     return challenge_doc
 
 async def analyze_food_image(image_base64: str) -> dict:
-    """Analyze food image using GPT-4o with Emergent LLM key"""
+    """Analyze food image using GPT-4o with enhanced accuracy for nutrition estimation"""
     try:
+        # Create chat instance with enhanced system message
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"food-analysis-{uuid.uuid4()}",
-            system_message="You are a nutritionist expert. You MUST respond with ONLY valid JSON, no additional text or explanations."
+            system_message="""You are an expert nutritionist and dietitian with advanced training in visual portion estimation and nutritional analysis. 
+
+Your task is to provide highly accurate nutrition estimates (within 2% margin of error) by:
+1. Carefully identifying all visible food items
+2. Estimating portion sizes using visual reference points (plate size, utensil comparison, food density)
+3. Considering cooking methods that affect caloric content (fried vs grilled, oil usage, etc.)
+4. Accounting for hidden ingredients (sauces, dressings, oils, butter)
+5. Using standardized nutritional databases (USDA) for calculations
+
+Be extremely precise and detailed in your analysis."""
         ).with_model("openai", "gpt-4o")
         
+        # Create image content
         image_content = ImageContent(image_base64=image_base64)
         
+        # Enhanced prompt for better accuracy
         user_message = UserMessage(
-            text="""Analyze this food image and respond with ONLY this exact JSON format (no markdown, no explanations, no additional text):
-{"food_name": "name of the dish", "calories": 250, "protein": 20, "carbs": 30, "fats": 10, "portion_size": "1 serving", "confidence": "medium"}
+            text="""Analyze this food image with EXTREME PRECISION and provide nutritional information.
 
-Replace the example values with your analysis. Respond with ONLY the JSON object.""",
+CRITICAL INSTRUCTIONS:
+1. IDENTIFY all food items visible in the image
+2. ESTIMATE portion sizes by:
+   - Comparing to standard plate size (usually 10-11 inches)
+   - Using visible utensils as reference (fork/spoon typically 6-7 inches)
+   - Considering food density and volume
+   - Identifying serving containers (cup, bowl, plate dimensions)
+
+3. CALCULATE calories and macros by:
+   - Using USDA nutritional database standards
+   - Accounting for cooking methods (fried adds 50-100 cal, oil/butter adds ~120 cal per tbsp)
+   - Including hidden ingredients (sauces, dressings, cooking fats)
+   - Considering preparation style (restaurant portions are typically 1.5-2x home portions)
+
+4. PROVIDE confidence level based on:
+   - "high" = All items clearly visible, standard preparations
+   - "medium" = Some items partially obscured or mixed dishes
+   - "low" = Complex dishes with many hidden ingredients
+
+Respond with ONLY this JSON format (no markdown, no explanations):
+{
+  "food_name": "specific dish name",
+  "items_identified": ["item 1", "item 2"],
+  "calories": exact_number,
+  "protein": exact_grams,
+  "carbs": exact_grams,
+  "fats": exact_grams,
+  "fiber": exact_grams,
+  "portion_size": "detailed portion description with measurements",
+  "portion_weight": estimated_grams,
+  "confidence": "high/medium/low",
+  "analysis_notes": "brief explanation of estimation method"
+}
+
+Be as accurate as possible. This is for health tracking.""",
             file_contents=[image_content]
         )
         
+        # Get response
         response = await chat.send_message(user_message)
-        print(f"Raw AI response: {response}")
+        print(f"Enhanced AI nutrition analysis: {response}")
         
         import json
         import re
         
+        # Clean and parse response
         response_text = response.strip()
         
+        # Extract JSON using regex
         json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
-        json_matches = re.findall(json_pattern, response_text)
+        json_matches = re.findall(json_pattern, response_text, re.DOTALL)
         
         if json_matches:
-            response_text = json_matches[0]
+            # Take the largest JSON match (most complete)
+            response_text = max(json_matches, key=len)
         else:
+            # Fallback: remove markdown
             if "```json" in response_text:
                 response_text = response_text.split("```json")[1].split("```")[0].strip()
             elif "```" in response_text:
@@ -492,26 +542,40 @@ Replace the example values with your analysis. Respond with ONLY the JSON object
         
         nutrition_data = json.loads(response_text)
         
-        required_fields = ["food_name", "calories", "protein", "carbs", "fats", "portion_size", "confidence"]
+        # Validate and ensure required fields
+        required_fields = ["food_name", "calories", "protein", "carbs", "fats"]
         for field in required_fields:
             if field not in nutrition_data:
                 raise ValueError(f"Missing required field: {field}")
         
-        print(f"Successfully parsed nutrition data: {nutrition_data}")
+        # Add default values for optional fields
+        nutrition_data.setdefault("fiber", 0)
+        nutrition_data.setdefault("portion_weight", 0)
+        nutrition_data.setdefault("confidence", "medium")
+        nutrition_data.setdefault("portion_size", "1 serving")
+        nutrition_data.setdefault("items_identified", [nutrition_data["food_name"]])
+        nutrition_data.setdefault("analysis_notes", "Standard nutritional analysis")
+        
+        print(f"Successfully parsed enhanced nutrition data: {nutrition_data}")
         return nutrition_data
         
     except Exception as e:
         print(f"Error analyzing food image: {str(e)}")
         print(f"Raw response was: {response if 'response' in locals() else 'No response received'}")
         
+        # Return realistic default values if analysis fails
         return {
             "food_name": "Mixed meal",
+            "items_identified": ["Unknown items"],
             "calories": 350,
             "protein": 25,
             "carbs": 40,
             "fats": 12,
+            "fiber": 5,
             "portion_size": "1 serving",
+            "portion_weight": 250,
             "confidence": "low",
+            "analysis_notes": "Analysis failed - using estimated values",
             "error": str(e)
         }
 
