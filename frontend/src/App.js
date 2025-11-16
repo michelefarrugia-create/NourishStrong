@@ -1326,14 +1326,28 @@ function App() {
             <span className="dashboard-tagline">Your Wellness Journey</span>
           </div>
           <div className="header-actions">
+            <div className="header-tabs">
+              <button 
+                className={`tab-button ${mainView === 'dashboard' ? 'active' : ''}`}
+                onClick={() => setMainView('dashboard')}
+              >
+                Dashboard
+              </button>
+              <button 
+                className={`tab-button ${mainView === 'profile' ? 'active' : ''}`}
+                onClick={() => setMainView('profile')}
+              >
+                Profile
+              </button>
+            </div>
             <span className="user-name">Hi, {user?.name}!</span>
-            <button onClick={() => setShowProfile(true)} className="btn-secondary">Profile</button>
             <button onClick={logout} className="btn-secondary">Logout</button>
           </div>
         </div>
       </header>
 
-      <div className="dashboard-content">
+      {mainView === 'dashboard' ? (
+        <div className="dashboard-content">
         {success && <div className="success-message">{success}</div>}
         {error && <div className="error-message">{error}</div>}
 
