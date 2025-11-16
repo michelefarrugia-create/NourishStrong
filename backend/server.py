@@ -234,6 +234,10 @@ def check_and_award_badges(user_id: str) -> List[str]:
     meal_count = len(meals)
     streak = calculate_streak(user_id)
     
+    # Get activity stats
+    activities = list(activities_collection.find({"user_id": user_id}))
+    activity_count = len(activities)
+    
     # Check badge conditions
     if meal_count >= 1 and "first_meal" not in current_badges:
         new_badges.append("first_meal")
@@ -268,6 +272,23 @@ def check_and_award_badges(user_id: str) -> List[str]:
     
     if any(count >= 3 for count in meals_by_day.values()) and "consistent" not in current_badges:
         new_badges.append("consistent")
+    
+    # Activity badges
+    if activity_count >= 1 and "first_activity" not in current_badges:
+        new_badges.append("first_activity")
+    
+    if activity_count >= 10 and "activity_10" not in current_badges:
+        new_badges.append("activity_10")
+    
+    if activity_count >= 50 and "activity_50" not in current_badges:
+        new_badges.append("activity_50")
+    
+    # Marathon badge - 5+ hours of activity in past week
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    recent_activities = [a for a in activities if datetime.fromisoformat(a["timestamp"]) >= week_ago]
+    total_minutes = sum(a["duration_minutes"] for a in recent_activities)
+    if total_minutes >= 300 and "marathon" not in current_badges:  # 5 hours = 300 minutes
+        new_badges.append("marathon")
     
     # Update user badges
     if new_badges:
