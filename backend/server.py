@@ -42,11 +42,16 @@ progress_photos_collection = db['progress_photos']
 challenges_collection = db['challenges']
 activities_collection = db['activities']
 weight_logs_collection = db['weight_logs']
+password_reset_tokens_collection = db['password_reset_tokens']
 
 # JWT settings
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = "HS256"
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', 'sk-emergent-2F8757d69949133Ef3')
+
+# SendGrid settings
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '')
 
 # Badge definitions
 BADGES = {
