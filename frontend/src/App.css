@@ -1391,6 +1391,82 @@ body {
   font-size: 18px;
 }
 
+/* Health Data Import */
+.health-import-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.import-card {
+  background: var(--gradient-card);
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.import-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 195, 74, 0.15);
+  border-color: var(--brand-primary);
+}
+
+.import-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.import-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.import-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.import-steps {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.import-steps ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.import-steps li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.import-note {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+  border-left: 4px solid var(--brand-warning);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 24px;
+}
+
+.import-note p {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Responsive */
 @media (max-width: 809px) {
   .auth-card {
