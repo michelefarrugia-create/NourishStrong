@@ -75,6 +75,9 @@ function App() {
         fetchAllUsers();
       } else {
         fetchMeals();
+        fetchGameificationData();
+        fetchAnalytics();
+        fetchProgressPhotos();
         // Load profile data
         if (user.profile) {
           setProfileData({
@@ -89,6 +92,39 @@ function App() {
       }
     }
   }, [user]);
+
+  const fetchGameificationData = async () => {
+    try {
+      const streakData = await apiCall('/api/gamification/streak');
+      setStreak(streakData);
+
+      const badgesData = await apiCall('/api/gamification/badges');
+      setBadges(badgesData);
+
+      const challengeData = await apiCall('/api/gamification/challenge');
+      setDailyChallenge(challengeData);
+    } catch (err) {
+      console.error('Failed to load gamification data:', err);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const data = await apiCall('/api/analytics/overview');
+      setAnalytics(data);
+    } catch (err) {
+      console.error('Failed to load analytics:', err);
+    }
+  };
+
+  const fetchProgressPhotos = async () => {
+    try {
+      const data = await apiCall('/api/progress-photos');
+      setProgressPhotos(data.photos);
+    } catch (err) {
+      console.error('Failed to load progress photos:', err);
+    }
+  };
 
   // API calls
   const apiCall = async (endpoint, method = 'GET', body = null) => {
