@@ -863,6 +863,11 @@ def reset_password(request: ResetPasswordRequest):
     
     return {"message": "Password has been reset successfully"}
 
+@app.get("/api/auth/validate-password")
+def validate_password(password: str):
+    """Validate password strength - for frontend real-time feedback"""
+    return validate_password_strength(password)
+
 @app.get("/api/auth/me")
 def get_me(user = Depends(get_current_user)):
     coach_info = None
