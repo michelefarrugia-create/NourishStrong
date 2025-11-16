@@ -735,6 +735,11 @@ def health_check():
 
 @app.post("/api/auth/register")
 def register(user_data: UserRegister):
+    # Validate password strength
+    password_validation = validate_password_strength(user_data.password)
+    if not password_validation["valid"]:
+        raise HTTPException(status_code=400, detail=password_validation["message"])
+    
     if users_collection.find_one({"email": user_data.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -755,6 +760,12 @@ def register(user_data: UserRegister):
     users_collection.insert_one(user)
     
     token = create_token(user_id, user_data.email, user_data.role)
+    
+    # Send welcome email (don't block registration if email fails)
+    try:
+        send_welcome_email(user_data.email, user_data.name)
+    except Exception as e:
+        print(f"Failed to send welcome email: {str(e)}")
     
     return {
         "token": token,
