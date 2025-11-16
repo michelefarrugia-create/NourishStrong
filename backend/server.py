@@ -54,7 +54,35 @@ BADGES = {
     "meals_100": {"name": "Century Club", "description": "Logged 100 meals", "icon": "🏆"},
     "early_bird": {"name": "Early Bird", "description": "Logged breakfast before 9am", "icon": "🌅"},
     "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
+    "first_activity": {"name": "Active Start", "description": "Logged your first activity", "icon": "🏃"},
+    "activity_10": {"name": "Moving Forward", "description": "Logged 10 activities", "icon": "🚴"},
+    "activity_50": {"name": "Fitness Enthusiast", "description": "Logged 50 activities", "icon": "🏋️"},
+    "marathon": {"name": "Marathon Master", "description": "Logged 5+ hours of activity in a week", "icon": "🎖️"},
 }
+
+# Activity types with calorie burn rates (calories per minute based on moderate intensity)
+ACTIVITY_TYPES = {
+    "walking": {"name": "Walking", "icon": "🚶", "cal_per_min": {"low": 3, "moderate": 5, "high": 7}},
+    "running": {"name": "Running", "icon": "🏃", "cal_per_min": {"low": 7, "moderate": 10, "high": 15}},
+    "cycling": {"name": "Cycling", "icon": "🚴", "cal_per_min": {"low": 5, "moderate": 8, "high": 12}},
+    "swimming": {"name": "Swimming", "icon": "🏊", "cal_per_min": {"low": 6, "moderate": 9, "high": 13}},
+    "gym": {"name": "Gym Workout", "icon": "🏋️", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
+    "yoga": {"name": "Yoga", "icon": "🧘", "cal_per_min": {"low": 2, "moderate": 3, "high": 5}},
+    "dancing": {"name": "Dancing", "icon": "💃", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
+    "sports": {"name": "Sports", "icon": "⚽", "cal_per_min": {"low": 5, "moderate": 8, "high": 12}},
+    "hiking": {"name": "Hiking", "icon": "🥾", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
+    "other": {"name": "Other", "icon": "🎯", "cal_per_min": {"low": 3, "moderate": 5, "high": 7}},
+}
+
+def calculate_calories_burned(activity_type: str, duration_minutes: int, intensity: str) -> int:
+    """Calculate estimated calories burned based on activity type, duration, and intensity"""
+    if activity_type not in ACTIVITY_TYPES:
+        activity_type = "other"
+    
+    cal_rates = ACTIVITY_TYPES[activity_type]["cal_per_min"]
+    cal_per_min = cal_rates.get(intensity, cal_rates["moderate"])
+    
+    return int(cal_per_min * duration_minutes)
 
 # Motivational quotes
 MOTIVATIONAL_QUOTES = [
