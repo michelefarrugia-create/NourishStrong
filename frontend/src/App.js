@@ -913,12 +913,6 @@ function App() {
             Sign Up
           </button>
         </p>
-        
-        <p className="auth-switch" style={{marginTop: '10px'}}>
-          <button onClick={() => setCurrentView('about')} className="link-button">
-            About NourishStrong
-          </button>
-        </p>
       </div>
     </div>
   );
