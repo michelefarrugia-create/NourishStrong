@@ -303,20 +303,33 @@ function App() {
     try {
       const profileToSend = {};
       Object.keys(profileData).forEach(key => {
-        if (profileData[key] !== '') {
+        if (profileData[key] !== '' && profileData[key] !== null) {
           profileToSend[key] = profileData[key];
         }
       });
 
       await apiCall('/api/profile', 'PUT', profileToSend);
       setSuccess('Profile updated successfully!');
-      setShowProfile(false);
       fetchCurrentUser();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProfilePictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result.split(',')[1];
+      setProfileData({...profileData, profile_picture: base64});
+      setProfilePicturePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAssignCoach = async (e) => {
