@@ -788,6 +788,131 @@ function App() {
   };
 
   // Render functions
+  const renderForgotPassword = () => (
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="brand-header">
+          <h1 className="auth-title">Reset Password</h1>
+          <p className="brand-tagline">We'll send you a reset link</p>
+        </div>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <form onSubmit={handleForgotPassword}>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+            required
+            className="input-field"
+          />
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+        
+        <p className="auth-switch">
+          Remember your password?
+          <button onClick={() => setCurrentView('login')} className="link-button">
+            Sign In
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderResetPassword = () => (
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="brand-header">
+          <h1 className="auth-title">Create New Password</h1>
+          <p className="brand-tagline">Choose a strong password</p>
+        </div>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <form onSubmit={handleResetPassword}>
+          <div style={{position: 'relative'}}>
+            <input
+              type="password"
+              placeholder="New Password (min 8 chars)"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                checkPasswordStrength(e.target.value);
+              }}
+              required
+              className="input-field"
+            />
+            {newPassword && passwordStrength.message && (
+              <div className={`password-strength-indicator ${passwordStrength.strength}`}>
+                <span className="strength-icon">
+                  {passwordStrength.valid ? '✓' : '⚠'}
+                </span>
+                {passwordStrength.message}
+              </div>
+            )}
+          </div>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Resetting...' : 'Reset Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+
+  const renderAbout = () => (
+    <div className="auth-container">
+      <div className="auth-card" style={{maxWidth: '700px'}}>
+        <div className="brand-header">
+          <h1 className="auth-title">About NourishStrong</h1>
+          <p className="brand-tagline">Your Wellness Journey, Your Way</p>
+        </div>
+        
+        <div style={{textAlign: 'left', padding: '20px', lineHeight: '1.8'}}>
+          <h2 style={{color: '#2D5F3F', marginTop: '20px'}}>Our Mission 🌱</h2>
+          <p>
+            NourishStrong is designed to support your weight loss and wellness journey 
+            through mindful eating and positive reinforcement, not numbers obsession.
+          </p>
+          
+          <h2 style={{color: '#2D5F3F', marginTop: '30px'}}>How It Works 💪</h2>
+          <ul style={{paddingLeft: '20px'}}>
+            <li><strong>AI-Powered Meal Tracking:</strong> Simply snap a photo of your meal, and our AI analyzes the nutrition</li>
+            <li><strong>Privacy First:</strong> Sensitive data (calories, macros, weight) are hidden from you and only visible to your coach</li>
+            <li><strong>Gamification:</strong> Earn badges, maintain streaks, and complete daily challenges</li>
+            <li><strong>Activity Tracking:</strong> Log exercises and sync health data from Apple Health or Google Fit</li>
+            <li><strong>Coach Support:</strong> Connect with a coach or supporter who can guide your journey</li>
+          </ul>
+          
+          <h2 style={{color: '#2D5F3F', marginTop: '30px'}}>Why NourishStrong? ✨</h2>
+          <p>
+            Traditional calorie-tracking apps can foster unhealthy relationships with food. 
+            NourishStrong takes a different approach by focusing on:
+          </p>
+          <ul style={{paddingLeft: '20px'}}>
+            <li>Building healthy habits, not counting numbers</li>
+            <li>Celebrating progress and small victories</li>
+            <li>Fostering supportive relationships with coaches</li>
+            <li>Promoting mindful eating and self-care</li>
+          </ul>
+          
+          <p style={{marginTop: '30px', padding: '20px', backgroundColor: '#f4f4f4', borderRadius: '10px', textAlign: 'center'}}>
+            <strong>Ready to start your journey?</strong><br/>
+            Join NourishStrong today and take the first step toward a healthier, stronger you! 🎯
+          </p>
+        </div>
+        
+        <button onClick={() => setCurrentView('login')} className="btn-primary" style={{marginTop: '20px'}}>
+          Get Started
+        </button>
+      </div>
+    </div>
+  );
+
   const renderLogin = () => (
     <div className="auth-container">
       <div className="auth-card">
