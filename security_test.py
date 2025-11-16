@@ -63,8 +63,15 @@ class SecurityTester:
             
             return response
         except requests.exceptions.Timeout:
-            print(f"Request timed out after {TIMEOUT} seconds")
-            return None
+            print(f"Request timed out after {TIMEOUT} seconds for {method} {endpoint}")
+            # Return a mock response for timeout to continue testing
+            class TimeoutResponse:
+                def __init__(self):
+                    self.status_code = 408
+                    self.text = "Request Timeout"
+                def json(self):
+                    return {"detail": "Request timeout"}
+            return TimeoutResponse()
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
             return None
