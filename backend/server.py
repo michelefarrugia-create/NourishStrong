@@ -65,30 +65,6 @@ BADGES = {
     "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
 }
 
-# Activity types with calorie burn rates (calories per minute based on moderate intensity)
-ACTIVITY_TYPES = {
-    "walking": {"name": "Walking", "icon": "🚶", "cal_per_min": {"low": 3, "moderate": 5, "high": 7}},
-    "running": {"name": "Running", "icon": "🏃", "cal_per_min": {"low": 7, "moderate": 10, "high": 15}},
-    "cycling": {"name": "Cycling", "icon": "🚴", "cal_per_min": {"low": 5, "moderate": 8, "high": 12}},
-    "swimming": {"name": "Swimming", "icon": "🏊", "cal_per_min": {"low": 6, "moderate": 9, "high": 13}},
-    "gym": {"name": "Gym Workout", "icon": "🏋️", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
-    "yoga": {"name": "Yoga", "icon": "🧘", "cal_per_min": {"low": 2, "moderate": 3, "high": 5}},
-    "dancing": {"name": "Dancing", "icon": "💃", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
-    "sports": {"name": "Sports", "icon": "⚽", "cal_per_min": {"low": 5, "moderate": 8, "high": 12}},
-    "hiking": {"name": "Hiking", "icon": "🥾", "cal_per_min": {"low": 4, "moderate": 6, "high": 9}},
-    "other": {"name": "Other", "icon": "🎯", "cal_per_min": {"low": 3, "moderate": 5, "high": 7}},
-}
-
-def calculate_calories_burned(activity_type: str, duration_minutes: int, intensity: str) -> int:
-    """Calculate estimated calories burned based on activity type, duration, and intensity"""
-    if activity_type not in ACTIVITY_TYPES:
-        activity_type = "other"
-    
-    cal_rates = ACTIVITY_TYPES[activity_type]["cal_per_min"]
-    cal_per_min = cal_rates.get(intensity, cal_rates["moderate"])
-    
-    return int(cal_per_min * duration_minutes)
-
 def parse_apple_health_xml(xml_content: str) -> List[dict]:
     """Parse Apple Health XML export and extract workout data"""
     import xml.etree.ElementTree as ET
