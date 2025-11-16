@@ -690,6 +690,186 @@ function App() {
     </div>
   );
 
+  const renderBadgesModal = () => (
+    <div className="modal-overlay" onClick={() => setShowBadges(false)}>
+      <div className="modal-content badges-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Your Badges</h2>
+        <p className="badge-progress">{badges.total_earned} of {badges.total_available} earned</p>
+        
+        <div className="badges-grid">
+          {badges.all_badges.map((badge) => (
+            <div key={badge.id} className={`badge-item ${badge.earned ? 'earned' : 'locked'}`}>
+              <div className="badge-icon">{badge.icon}</div>
+              <h4>{badge.name}</h4>
+              <p>{badge.description}</p>
+              {!badge.earned && <div className="badge-lock">🔒</div>}
+            </div>
+          ))}
+        </div>
+        
+        <button onClick={() => setShowBadges(false)} className="btn-primary" style={{marginTop: '24px'}}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderAnalyticsModal = () => (
+    <div className="modal-overlay" onClick={() => setShowAnalytics(false)}>
+      <div className="modal-content analytics-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Your Insights</h2>
+        
+        {analytics && (
+          <>
+            <div className="analytics-summary">
+              <div className="analytics-card">
+                <h4>This Week</h4>
+                <p className="analytics-value">{analytics.meals_this_week}</p>
+                <p className="analytics-label">meals logged</p>
+              </div>
+              <div className=\"analytics-card\">
+                <h4>This Month</h4>
+                <p className=\"analytics-value\">{analytics.meals_this_month}</p>
+                <p className=\"analytics-label\">meals logged</p>
+              </div>
+              <div className=\"analytics-card\">
+                <h4>Total</h4>
+                <p className=\"analytics-value\">{analytics.total_meals}</p>
+                <p className=\"analytics-label\">all time</p>
+              </div>
+            </div>
+
+            <div className=\"analytics-section\">
+              <h3>Weekly Trend</h3>
+              <div className=\"weekly-chart\">
+                {analytics.weekly_trend.map((day) => (
+                  <div key={day.date} className=\"chart-bar\">
+                    <div className=\"bar\" style={{height: `${day.meals * 30}px`}}>
+                      <span className=\"bar-value\">{day.meals}</span>
+                    </div>
+                    <span className=\"bar-label\">{day.day_name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {analytics.meal_times && analytics.meal_times.length > 0 && (
+              <div className=\"analytics-section\">
+                <h3>Most Common Meal Times</h3>
+                <div className=\"meal-times-list\">
+                  {analytics.meal_times.map((time, index) => (
+                    <div key={index} className=\"meal-time-item\">
+                      <span>{time.hour}:00</span>
+                      <span>{time.count} meals</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        
+        <button onClick={() => setShowAnalytics(false)} className=\"btn-primary\" style={{marginTop: '24px'}}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderProgressPhotosModal = () => (
+    <div className=\"modal-overlay\" onClick={() => setShowProgressPhotos(false)}>
+      <div className=\"modal-content progress-photos-modal\" onClick={(e) => e.stopPropagation()}>
+        <h2 className=\"modal-title\">Progress Photos</h2>
+        
+        {error && <div className=\"error-message\">{error}</div>}
+        {success && <div className=\"success-message\">{success}</div>}
+        
+        {!capturedProgressPhoto ? (
+          <div>
+            <div className=\"progress-upload-section\">
+              <label className=\"btn-secondary upload-label\" style={{width: '100%'}}>
+                Upload Progress Photo
+                <input 
+                  type=\"file\" 
+                  accept=\"image/*\" 
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setCapturedProgressPhoto(reader.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                  style={{display: 'none'}} 
+                />
+              </label>
+            </div>
+
+            <div className=\"progress-photos-grid\">
+              {progressPhotos.length === 0 ? (
+                <p className=\"empty-state\">No progress photos yet. Upload your first one!</p>
+              ) : (
+                progressPhotos.map((photo) => (
+                  <div key={photo.photo_id} className=\"progress-photo-card\">
+                    <img 
+                      src={`data:image/jpeg;base64,${photo.image_base64}`} 
+                      alt=\"Progress\" 
+                      className=\"progress-photo-image\"
+                    />
+                    <div className=\"progress-photo-info\">
+                      <p className=\"progress-photo-date\">{new Date(photo.timestamp).toLocaleDateString()}</p>
+                      {photo.weight && <p className=\"progress-photo-weight\">Weight: {photo.weight} kg</p>}
+                      {photo.notes && <p className=\"progress-photo-notes\">{photo.notes}</p>}
+                      <button 
+                        onClick={() => deleteProgressPhoto(photo.photo_id)} 
+                        className=\"btn-remove-coach\"
+                        style={{marginTop: '8px', width: '100%'}}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <img src={capturedProgressPhoto} alt=\"Preview\" className=\"preview-image\" />
+            <input
+              type=\"number\"
+              step=\"0.1\"
+              placeholder=\"Current Weight (kg) - Optional\"
+              value={progressPhotoWeight}
+              onChange={(e) => setProgressPhotoWeight(e.target.value)}
+              className=\"input-field\"
+            />
+            <textarea
+              placeholder=\"Notes (optional)\"
+              value={progressPhotoNotes}
+              onChange={(e) => setProgressPhotoNotes(e.target.value)}
+              className=\"notes-input\"
+            />
+            <div className=\"modal-actions\">
+              <button onClick={handleUploadProgressPhoto} className=\"btn-primary\" disabled={loading}>
+                {loading ? 'Uploading...' : 'Upload Photo'}
+              </button>
+              <button onClick={() => setCapturedProgressPhoto(null)} className=\"btn-secondary\">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {!capturedProgressPhoto && (
+          <button onClick={() => setShowProgressPhotos(false)} className=\"btn-secondary\" style={{marginTop: '16px', width: '100%'}}>
+            Close
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
