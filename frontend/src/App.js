@@ -933,6 +933,76 @@ function App() {
     </div>
   );
 
+  const renderBarcodeScannerModal = () => (
+    <div className="modal-overlay" onClick={() => setShowBarcodeScanner(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Scan Barcode</h2>
+        <p className="modal-subtitle">Enter the barcode number from packaged food</p>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <input
+          type="text"
+          placeholder="Enter barcode number"
+          value={barcodeInput}
+          onChange={(e) => setBarcodeInput(e.target.value)}
+          className="input-field"
+          maxLength="20"
+        />
+        
+        <button 
+          onClick={handleBarcodeScann} 
+          className="btn-primary" 
+          disabled={scanningBarcode}
+          style={{width: '100%', marginBottom: '16px'}}
+        >
+          {scanningBarcode ? 'Scanning...' : 'Scan Barcode'}
+        </button>
+        
+        {barcodeResult && (
+          <div className="barcode-result">
+            <h3>Product Found!</h3>
+            <div className="barcode-product-info">
+              <p className="product-name">{barcodeResult.food_name}</p>
+              {barcodeResult.brand && <p className="product-brand">{barcodeResult.brand}</p>}
+              <div className="nutrition-grid">
+                <div className="nutrition-item">
+                  <span className="nutrition-label">Calories</span>
+                  <span className="nutrition-value">{barcodeResult.calories}</span>
+                </div>
+                <div className="nutrition-item">
+                  <span className="nutrition-label">Protein</span>
+                  <span className="nutrition-value">{barcodeResult.protein}g</span>
+                </div>
+                <div className="nutrition-item">
+                  <span className="nutrition-label">Carbs</span>
+                  <span className="nutrition-value">{barcodeResult.carbs}g</span>
+                </div>
+                <div className="nutrition-item">
+                  <span className="nutrition-label">Fats</span>
+                  <span className="nutrition-value">{barcodeResult.fats}g</span>
+                </div>
+              </div>
+              <p className="serving-size">Serving: {barcodeResult.serving_size}</p>
+              <button onClick={addBarcodeProduct} className="btn-primary" style={{width: '100%', marginTop: '16px'}}>
+                Add to Meal Log
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <button onClick={() => {
+          setShowBarcodeScanner(false);
+          setBarcodeInput('');
+          setBarcodeResult(null);
+        }} className="btn-secondary" style={{width: '100%'}}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+
   const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
