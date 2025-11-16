@@ -1080,6 +1080,15 @@ function App() {
           </div>
         )}
 
+        {/* Motivational Quote */}
+        {dailyQuote && (
+          <div className="motivational-quote-card">
+            <span className="quote-icon">{dailyQuote.icon}</span>
+            <p className="quote-text">"{dailyQuote.quote}"</p>
+            <span className="quote-category">{dailyQuote.category}</span>
+          </div>
+        )}
+
         {/* Coach Info Section */}
         {user?.coach ? (
           <div className="coach-info-card">
