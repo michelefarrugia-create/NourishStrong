@@ -12,8 +12,11 @@ import bcrypt
 import uuid
 import base64
 import asyncio
+import re
 from dotenv import load_dotenv
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 load_dotenv()
 
