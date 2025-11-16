@@ -1302,6 +1302,28 @@ body {
   .progress-photos-grid {
     grid-template-columns: 1fr;
   }
+
+  .motivational-quote-card {
+    padding: 20px 16px;
+  }
+
+  .quote-text {
+    font-size: 16px;
+  }
+
+  .nutrition-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .capture-options {
+    grid-template-columns: 1fr;
+  }
+
+  .capture-options .btn-primary,
+  .capture-options .btn-secondary,
+  .capture-options .upload-label {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
