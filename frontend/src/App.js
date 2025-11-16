@@ -27,10 +27,11 @@ function App() {
     age: '',
     gender: '',
     height: '',
-    weight: '',
     activity_level: '',
-    goal_weight: ''
+    goal_weight: '',
+    profile_picture: null
   });
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
 
   // Coach assignment state
   const [showCoachAssignment, setShowCoachAssignment] = useState(false);
