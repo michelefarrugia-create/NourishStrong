@@ -887,6 +887,66 @@ function App() {
         {success && <div className="success-message">{success}</div>}
         {error && <div className="error-message">{error}</div>}
 
+        {/* Badge Celebration */}
+        {newBadgesCelebration.length > 0 && (
+          <div className="celebration-banner">
+            <h3>🎉 New Badge{newBadgesCelebration.length > 1 ? 's' : ''} Earned!</h3>
+            <div className="celebration-badges">
+              {newBadgesCelebration.map((badge, index) => (
+                <div key={index} className="celebration-badge">
+                  <span className="celebration-icon">{badge.icon}</span>
+                  <span>{badge.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Gamification Dashboard */}
+        <div className="gamification-bar">
+          <div className="streak-display" onClick={() => setShowAnalytics(true)}>
+            <span className="streak-icon">🔥</span>
+            <div className="streak-info">
+              <span className="streak-number">{streak.current_streak}</span>
+              <span className="streak-label">day streak</span>
+            </div>
+          </div>
+          
+          <div className="badges-display" onClick={() => setShowBadges(true)}>
+            <span className="badges-icon">🏆</span>
+            <div className="badges-info">
+              <span className="badges-number">{badges.total_earned}/{badges.total_available}</span>
+              <span className="badges-label">badges</span>
+            </div>
+          </div>
+
+          <button onClick={() => setShowProgressPhotos(true)} className="quick-action-btn">
+            <span>📸</span>
+            <span>Progress</span>
+          </button>
+
+          <button onClick={() => setShowAnalytics(true)} className="quick-action-btn">
+            <span>📊</span>
+            <span>Insights</span>
+          </button>
+        </div>
+
+        {/* Daily Challenge */}
+        {dailyChallenge && !dailyChallenge.completed && (
+          <div className="daily-challenge-card">
+            <div className="challenge-header">
+              <span className="challenge-icon">{dailyChallenge.challenge.icon}</span>
+              <div>
+                <h3>{dailyChallenge.challenge.title}</h3>
+                <p>{dailyChallenge.challenge.description}</p>
+              </div>
+            </div>
+            <button onClick={handleCompleteChallenge} className="btn-primary challenge-btn">
+              Mark Complete
+            </button>
+          </div>
+        )}
+
         {/* Coach Info Section */}
         {user?.coach ? (
           <div className="coach-info-card">
