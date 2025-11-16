@@ -769,7 +769,7 @@ function App() {
           </>
         )}
         
-        <button onClick={() => setShowAnalytics(false)} className=\"btn-primary\" style={{marginTop: '24px'}}>
+        <button onClick={() => setShowAnalytics(false)} className="btn-primary" style={{marginTop: '24px'}}>
           Close
         </button>
       </div>
@@ -777,21 +777,21 @@ function App() {
   );
 
   const renderProgressPhotosModal = () => (
-    <div className=\"modal-overlay\" onClick={() => setShowProgressPhotos(false)}>
-      <div className=\"modal-content progress-photos-modal\" onClick={(e) => e.stopPropagation()}>
-        <h2 className=\"modal-title\">Progress Photos</h2>
+    <div className="modal-overlay" onClick={() => setShowProgressPhotos(false)}>
+      <div className="modal-content progress-photos-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Progress Photos</h2>
         
-        {error && <div className=\"error-message\">{error}</div>}
-        {success && <div className=\"success-message\">{success}</div>}
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
         
         {!capturedProgressPhoto ? (
           <div>
-            <div className=\"progress-upload-section\">
-              <label className=\"btn-secondary upload-label\" style={{width: '100%'}}>
+            <div className="progress-upload-section">
+              <label className="btn-secondary upload-label" style={{width: '100%'}}>
                 Upload Progress Photo
                 <input 
-                  type=\"file\" 
-                  accept=\"image/*\" 
+                  type="file" 
+                  accept="image/*" 
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
@@ -805,24 +805,24 @@ function App() {
               </label>
             </div>
 
-            <div className=\"progress-photos-grid\">
+            <div className="progress-photos-grid">
               {progressPhotos.length === 0 ? (
-                <p className=\"empty-state\">No progress photos yet. Upload your first one!</p>
+                <p className="empty-state">No progress photos yet. Upload your first one!</p>
               ) : (
                 progressPhotos.map((photo) => (
-                  <div key={photo.photo_id} className=\"progress-photo-card\">
+                  <div key={photo.photo_id} className="progress-photo-card">
                     <img 
                       src={`data:image/jpeg;base64,${photo.image_base64}`} 
-                      alt=\"Progress\" 
-                      className=\"progress-photo-image\"
+                      alt="Progress" 
+                      className="progress-photo-image"
                     />
-                    <div className=\"progress-photo-info\">
-                      <p className=\"progress-photo-date\">{new Date(photo.timestamp).toLocaleDateString()}</p>
-                      {photo.weight && <p className=\"progress-photo-weight\">Weight: {photo.weight} kg</p>}
-                      {photo.notes && <p className=\"progress-photo-notes\">{photo.notes}</p>}
+                    <div className="progress-photo-info">
+                      <p className="progress-photo-date">{new Date(photo.timestamp).toLocaleDateString()}</p>
+                      {photo.weight && <p className="progress-photo-weight">Weight: {photo.weight} kg</p>}
+                      {photo.notes && <p className="progress-photo-notes">{photo.notes}</p>}
                       <button 
                         onClick={() => deleteProgressPhoto(photo.photo_id)} 
-                        className=\"btn-remove-coach\"
+                        className="btn-remove-coach"
                         style={{marginTop: '8px', width: '100%'}}
                       >
                         Delete
@@ -835,26 +835,26 @@ function App() {
           </div>
         ) : (
           <div>
-            <img src={capturedProgressPhoto} alt=\"Preview\" className=\"preview-image\" />
+            <img src={capturedProgressPhoto} alt="Preview" className="preview-image" />
             <input
-              type=\"number\"
-              step=\"0.1\"
-              placeholder=\"Current Weight (kg) - Optional\"
+              type="number"
+              step="0.1"
+              placeholder="Current Weight (kg) - Optional"
               value={progressPhotoWeight}
               onChange={(e) => setProgressPhotoWeight(e.target.value)}
-              className=\"input-field\"
+              className="input-field"
             />
             <textarea
-              placeholder=\"Notes (optional)\"
+              placeholder="Notes (optional)"
               value={progressPhotoNotes}
               onChange={(e) => setProgressPhotoNotes(e.target.value)}
-              className=\"notes-input\"
+              className="notes-input"
             />
-            <div className=\"modal-actions\">
-              <button onClick={handleUploadProgressPhoto} className=\"btn-primary\" disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleUploadProgressPhoto} className="btn-primary" disabled={loading}>
                 {loading ? 'Uploading...' : 'Upload Photo'}
               </button>
-              <button onClick={() => setCapturedProgressPhoto(null)} className=\"btn-secondary\">
+              <button onClick={() => setCapturedProgressPhoto(null)} className="btn-secondary">
                 Cancel
               </button>
             </div>
@@ -862,7 +862,7 @@ function App() {
         )}
         
         {!capturedProgressPhoto && (
-          <button onClick={() => setShowProgressPhotos(false)} className=\"btn-secondary\" style={{marginTop: '16px', width: '100%'}}>
+          <button onClick={() => setShowProgressPhotos(false)} className="btn-secondary" style={{marginTop: '16px', width: '100%'}}>
             Close
           </button>
         )}
