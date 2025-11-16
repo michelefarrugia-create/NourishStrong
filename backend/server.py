@@ -542,6 +542,71 @@ def complete_challenge(challenge_data: DailyChallengeComplete, user = Depends(ge
     
     return {"message": "Challenge completed!", "celebration": True}
 
+@app.get("/api/gamification/quote")
+def get_daily_quote(user = Depends(get_current_user)):
+    """Get a random motivational quote"""
+    import random
+    quote = random.choice(MOTIVATIONAL_QUOTES)
+    return {
+        "quote": quote["quote"],
+        "category": quote["category"],
+        "icon": "💫"
+    }
+
+@app.post("/api/barcode-scan")
+async def scan_barcode(barcode_data: dict, user = Depends(get_current_user)):
+    """Scan barcode and get nutrition info using AI"""
+    barcode = barcode_data.get("barcode")
+    
+    if not barcode:
+        raise HTTPException(status_code=400, detail="Barcode required")
+    
+    try:
+        # Use AI to generate realistic nutrition data based on barcode
+        # In production, you'd use a real API like Open Food Facts or USDA
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"barcode-scan-{uuid.uuid4()}",
+            system_message="You are a nutrition database expert. Provide realistic nutrition information for common food products."
+        ).with_model("openai", "gpt-4o")
+        
+        user_message = UserMessage(
+            text=f"""Given this barcode number: {barcode}
+            
+Provide realistic nutrition information in this exact JSON format (no markdown, no explanations):
+{{"food_name": "product name", "brand": "brand name", "calories": 250, "protein": 10, "carbs": 30, "fats": 8, "serving_size": "1 serving", "confidence": "medium"}}
+
+Make educated guesses for common products. If it seems like a snack barcode, suggest snack nutrition. If it seems like a beverage, suggest beverage nutrition."""
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        import json
+        import re
+        
+        response_text = response.strip()
+        json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+        json_matches = re.findall(json_pattern, response_text)
+        
+        if json_matches:
+            response_text = json_matches[0]
+        
+        nutrition_data = json.loads(response_text)
+        
+        return {
+            "success": True,
+            "barcode": barcode,
+            "product": nutrition_data
+        }
+        
+    except Exception as e:
+        print(f"Error scanning barcode: {str(e)}")
+        return {
+            "success": False,
+            "message": "Could not identify product. Please try manual entry or take a photo.",
+            "barcode": barcode
+        }
+
 @app.get("/api/analytics/overview")
 def get_analytics_overview(user = Depends(get_current_user)):
     meals = list(meals_collection.find({"user_id": user["user_id"]}))
