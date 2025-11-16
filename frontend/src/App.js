@@ -48,6 +48,20 @@ function App() {
   const [userStats, setUserStats] = useState(null);
   const [selectedUserInfo, setSelectedUserInfo] = useState(null);
 
+  // Gamification state
+  const [streak, setStreak] = useState({ current_streak: 0, streak_record: 0 });
+  const [badges, setBadges] = useState({ earned_badges: [], all_badges: [], total_earned: 0, total_available: 0 });
+  const [dailyChallenge, setDailyChallenge] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [progressPhotos, setProgressPhotos] = useState([]);
+  const [showProgressPhotos, setShowProgressPhotos] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [newBadgesCelebration, setNewBadgesCelebration] = useState([]);
+  const [capturedProgressPhoto, setCapturedProgressPhoto] = useState(null);
+  const [progressPhotoWeight, setProgressPhotoWeight] = useState('');
+  const [progressPhotoNotes, setProgressPhotoNotes] = useState('');
+
   // Check authentication on load
   useEffect(() => {
     if (token) {
