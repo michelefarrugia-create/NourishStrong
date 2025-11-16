@@ -1102,6 +1102,73 @@ function App() {
     </div>
   );
 
+  const renderActivityLoggerModal = () => (
+    <div className="modal-overlay" onClick={() => setShowActivityLogger(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Log Activity</h2>
+        <p className="modal-subtitle">Track your workouts and exercises</p>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <form onSubmit={handleLogActivity}>
+          <label className="input-label">Activity Type</label>
+          <select
+            value={activityForm.activity_type}
+            onChange={(e) => setActivityForm({...activityForm, activity_type: e.target.value})}
+            className="input-field"
+          >
+            {activityTypes.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.icon} {type.name}
+              </option>
+            ))}
+          </select>
+
+          <label className="input-label">Duration (minutes)</label>
+          <input
+            type="number"
+            placeholder="Duration in minutes"
+            value={activityForm.duration_minutes}
+            onChange={(e) => setActivityForm({...activityForm, duration_minutes: e.target.value})}
+            className="input-field"
+            min="1"
+            required
+          />
+
+          <label className="input-label">Intensity</label>
+          <select
+            value={activityForm.intensity}
+            onChange={(e) => setActivityForm({...activityForm, intensity: e.target.value})}
+            className="input-field"
+          >
+            <option value="low">Low - Light effort</option>
+            <option value="moderate">Moderate - Some effort</option>
+            <option value="high">High - Intense effort</option>
+          </select>
+
+          <label className="input-label">Notes (optional)</label>
+          <textarea
+            placeholder="Add any notes about your workout"
+            value={activityForm.notes}
+            onChange={(e) => setActivityForm({...activityForm, notes: e.target.value})}
+            className="notes-input"
+            rows="3"
+          />
+
+          <div className="modal-actions">
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Logging...' : 'Log Activity'}
+            </button>
+            <button type="button" onClick={() => setShowActivityLogger(false)} className="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
