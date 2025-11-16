@@ -796,6 +796,73 @@ def login(user_data: UserLogin):
         }
     }
 
+@app.post("/api/auth/forgot-password")
+def forgot_password(request: ForgotPasswordRequest):
+    """Send password reset email"""
+    user = users_collection.find_one({"email": request.email})
+    
+    # Don't reveal if email exists or not for security
+    if not user:
+        return {"message": "If an account with that email exists, a password reset link has been sent."}
+    
+    # Generate reset token
+    reset_token = str(uuid.uuid4())
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    
+    # Store reset token
+    password_reset_tokens_collection.insert_one({
+        "token": reset_token,
+        "user_id": user["user_id"],
+        "email": request.email,
+        "expires_at": expires_at.isoformat(),
+        "used": False,
+        "created_at": datetime.utcnow().isoformat()
+    })
+    
+    # Send reset email
+    try:
+        send_password_reset_email(request.email, user["name"], reset_token)
+    except Exception as e:
+        print(f"Failed to send password reset email: {str(e)}")
+    
+    return {"message": "If an account with that email exists, a password reset link has been sent."}
+
+@app.post("/api/auth/reset-password")
+def reset_password(request: ResetPasswordRequest):
+    """Reset password using token"""
+    # Validate password strength
+    password_validation = validate_password_strength(request.new_password)
+    if not password_validation["valid"]:
+        raise HTTPException(status_code=400, detail=password_validation["message"])
+    
+    # Find and validate token
+    token_doc = password_reset_tokens_collection.find_one({"token": request.token})
+    
+    if not token_doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    if token_doc["used"]:
+        raise HTTPException(status_code=400, detail="This reset link has already been used")
+    
+    # Check if token is expired
+    expires_at = datetime.fromisoformat(token_doc["expires_at"])
+    if datetime.utcnow() > expires_at:
+        raise HTTPException(status_code=400, detail="Reset token has expired")
+    
+    # Update user password
+    users_collection.update_one(
+        {"user_id": token_doc["user_id"]},
+        {"$set": {"password": hash_password(request.new_password)}}
+    )
+    
+    # Mark token as used
+    password_reset_tokens_collection.update_one(
+        {"token": request.token},
+        {"$set": {"used": True, "used_at": datetime.utcnow().isoformat()}}
+    )
+    
+    return {"message": "Password has been reset successfully"}
+
 @app.get("/api/auth/me")
 def get_me(user = Depends(get_current_user)):
     coach_info = None
