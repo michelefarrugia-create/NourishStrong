@@ -319,6 +319,12 @@ function App() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!passwordStrength.valid) {
+      setError('Please use a stronger password');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -327,6 +333,57 @@ function App() {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setCurrentView('dashboard');
+      setSuccess('Welcome! Check your email for important information.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const data = await apiCall('/api/auth/forgot-password', 'POST', { email: resetEmail });
+      setSuccess(data.message);
+      setTimeout(() => {
+        setCurrentView('login');
+        setResetEmail('');
+      }, 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    if (!passwordStrength.valid) {
+      setError('Please use a stronger password');
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      const data = await apiCall('/api/auth/reset-password', 'POST', { 
+        token: resetToken, 
+        new_password: newPassword 
+      });
+      setSuccess(data.message);
+      setTimeout(() => {
+        setCurrentView('login');
+        setResetToken('');
+        setNewPassword('');
+      }, 2000);
     } catch (err) {
       setError(err.message);
     } finally {
