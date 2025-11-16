@@ -1221,6 +1221,82 @@ function App() {
     </div>
   );
 
+  const renderHealthImportModal = () => (
+    <div className="modal-overlay" onClick={() => setShowHealthImport(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Sync Wearable Data</h2>
+        <p className="modal-subtitle">Import activities from your health apps</p>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        <div className="health-import-options">
+          <div className="import-card">
+            <div className="import-icon">🍎</div>
+            <h3>Apple Health</h3>
+            <p>Import workouts from iPhone Health app</p>
+            <div className="import-steps">
+              <ol>
+                <li>Open Health app on iPhone</li>
+                <li>Tap your profile (top right)</li>
+                <li>Scroll down → "Export All Health Data"</li>
+                <li>Save the export.zip file</li>
+                <li>Extract and upload export.xml below</li>
+              </ol>
+            </div>
+            <label className="btn-primary upload-label" style={{width: '100%', marginTop: '16px'}}>
+              {importingHealth ? 'Importing...' : 'Upload Apple Health XML'}
+              <input 
+                type="file" 
+                accept=".xml" 
+                onChange={(e) => handleHealthFileImport(e, 'apple_health')}
+                disabled={importingHealth}
+                style={{display: 'none'}} 
+              />
+            </label>
+          </div>
+
+          <div className="import-card">
+            <div className="import-icon">🤖</div>
+            <h3>Google Fit</h3>
+            <p>Import activities from Google Fit</p>
+            <div className="import-steps">
+              <ol>
+                <li>Go to Google Takeout</li>
+                <li>Select only "Fit" data</li>
+                <li>Choose CSV format</li>
+                <li>Download your data</li>
+                <li>Upload the CSV file below</li>
+              </ol>
+            </div>
+            <label className="btn-primary upload-label" style={{width: '100%', marginTop: '16px'}}>
+              {importingHealth ? 'Importing...' : 'Upload Google Fit CSV'}
+              <input 
+                type="file" 
+                accept=".csv" 
+                onChange={(e) => handleHealthFileImport(e, 'google_fit')}
+                disabled={importingHealth}
+                style={{display: 'none'}} 
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="import-note">
+          <p><strong>💡 Tip:</strong> This is a one-time import. For continuous syncing, export and upload regularly, or consider upgrading to automatic sync in the future.</p>
+        </div>
+
+        <button 
+          onClick={() => setShowHealthImport(false)} 
+          className="btn-secondary" 
+          style={{width: '100%', marginTop: '16px'}}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+
   const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
