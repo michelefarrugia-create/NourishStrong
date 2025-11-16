@@ -304,6 +304,140 @@ def require_coach(user = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Coach access required")
     return user
 
+def validate_password_strength(password: str) -> dict:
+    """
+    Validate password strength
+    Returns: {"valid": bool, "message": str, "strength": str}
+    """
+    if len(password) < 8:
+        return {"valid": False, "message": "Password must be at least 8 characters long", "strength": "weak"}
+    
+    has_upper = bool(re.search(r'[A-Z]', password))
+    has_lower = bool(re.search(r'[a-z]', password))
+    has_digit = bool(re.search(r'\d', password))
+    has_special = bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password))
+    
+    strength_count = sum([has_upper, has_lower, has_digit, has_special])
+    
+    if strength_count < 3:
+        missing = []
+        if not has_upper:
+            missing.append("uppercase letter")
+        if not has_lower:
+            missing.append("lowercase letter")
+        if not has_digit:
+            missing.append("number")
+        if not has_special:
+            missing.append("special character")
+        
+        return {
+            "valid": False, 
+            "message": f"Password must contain at least 3 of: uppercase, lowercase, number, special character. Missing: {', '.join(missing[:2])}",
+            "strength": "weak"
+        }
+    
+    if strength_count == 3:
+        return {"valid": True, "message": "Password strength: Good", "strength": "good"}
+    else:
+        return {"valid": True, "message": "Password strength: Strong", "strength": "strong"}
+
+def send_email(to_email: str, subject: str, html_content: str) -> bool:
+    """Send email using SendGrid"""
+    try:
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_email,
+            subject=subject,
+            html_content=html_content
+        )
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        return response.status_code in [200, 201, 202]
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        return False
+
+def send_welcome_email(user_email: str, user_name: str) -> bool:
+    """Send welcome email to new users"""
+    subject = "Welcome to NourishStrong! 🎉"
+    html_content = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h1 style="color: #2D5F3F; text-align: center;">Welcome to NourishStrong! 🌱</h1>
+                <p>Hi {user_name},</p>
+                <p>We're thrilled to have you join our community! Your journey to a healthier, stronger you starts today.</p>
+                
+                <div style="background-color: #f4f4f4; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h2 style="color: #2D5F3F; margin-top: 0;">Getting Started:</h2>
+                    <ul style="padding-left: 20px;">
+                        <li>📸 Log your first meal by taking a photo</li>
+                        <li>💪 Track your daily activities</li>
+                        <li>🎯 Complete daily challenges</li>
+                        <li>🏆 Earn badges for your achievements</li>
+                    </ul>
+                </div>
+                
+                <p>Remember: Progress, not perfection. Every small step counts!</p>
+                
+                <p style="margin-top: 30px;">Stay strong,<br>
+                <strong>The NourishStrong Team</strong></p>
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 12px;">
+                    <p>You're receiving this email because you signed up for NourishStrong.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+    return send_email(user_email, subject, html_content)
+
+def send_password_reset_email(user_email: str, user_name: str, reset_token: str) -> bool:
+    """Send password reset email"""
+    # In production, this should be the actual frontend URL
+    reset_link = f"http://localhost:3000/reset-password?token={reset_token}"
+    
+    subject = "Reset Your NourishStrong Password"
+    html_content = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h1 style="color: #2D5F3F; text-align: center;">Password Reset Request</h1>
+                <p>Hi {user_name},</p>
+                <p>We received a request to reset your password for your NourishStrong account.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_link}" 
+                       style="background-color: #2D5F3F; color: white; padding: 15px 30px; 
+                              text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+                <p style="background-color: #f4f4f4; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
+                    {reset_link}
+                </p>
+                
+                <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>⚠️ Security Note:</strong> This link will expire in 1 hour. 
+                        If you didn't request this reset, please ignore this email.
+                    </p>
+                </div>
+                
+                <p style="margin-top: 30px;">Stay strong,<br>
+                <strong>The NourishStrong Team</strong></p>
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 12px;">
+                    <p>You're receiving this email because a password reset was requested for your account.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+    return send_email(user_email, subject, html_content)
+
 def calculate_streak(user_id: str) -> int:
     """Calculate current consecutive days streak"""
     meals = list(meals_collection.find({"user_id": user_id}).sort("timestamp", -1))
