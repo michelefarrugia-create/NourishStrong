@@ -661,11 +661,61 @@ def get_me(user = Depends(get_current_user)):
 
 @app.put("/api/profile")
 def update_profile(profile_data: UserProfile, user = Depends(get_current_user)):
+    # Don't allow weight in user profile
+    update_data = profile_data.dict(exclude_none=True)
+    update_data.pop('weight', None)  # Remove weight if somehow included
+    
     users_collection.update_one(
-        {"user_id": user["user_id"]},
-        {"$set": {"profile": profile_data.dict(exclude_none=True)}}
+        {" user_id": user["user_id"]},
+        {"$set": {"profile": update_data}}
     )
     return {"message": "Profile updated successfully"}
+
+@app.post("/api/coach/users/{user_id}/weight")
+def log_client_weight(user_id: str, weight_data: WeightLog, coach = Depends(require_coach)):
+    """Coach logs weight for a client"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    weight_log_id = str(uuid.uuid4())
+    weight_log = {
+        "log_id": weight_log_id,
+        "user_id": user_id,
+        "coach_id": coach["user_id"],
+        "weight": weight_data.weight,
+        "notes": weight_data.notes,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    weight_logs_collection.insert_one(weight_log)
+    
+    return {
+        "log_id": weight_log_id,
+        "message": "Weight logged successfully",
+        "weight": weight_data.weight
+    }
+
+@app.get("/api/coach/users/{user_id}/weight-history")
+def get_client_weight_history(user_id: str, coach = Depends(require_coach)):
+    """Get weight history for a client"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    weight_logs = list(weight_logs_collection.find({"user_id": user_id}).sort("timestamp", -1))
+    
+    for log in weight_logs:
+        log.pop('_id', None)
+    
+    return {"weight_logs": weight_logs}
+
+@app.delete("/api/coach/users/{user_id}/weight/{log_id}")
+def delete_weight_log(user_id: str, log_id: str, coach = Depends(require_coach)):
+    """Delete a weight log"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    weight_logs_collection.delete_one({"log_id": log_id, "user_id": user_id})
+    return {"message": "Weight log deleted successfully"}
 
 @app.post("/api/assign-coach")
 def assign_coach(assignment: CoachAssignment, user = Depends(get_current_user)):
