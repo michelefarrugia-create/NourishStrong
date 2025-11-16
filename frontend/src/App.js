@@ -1355,6 +1355,11 @@ function App() {
             <span>Log Activity</span>
           </button>
 
+          <button onClick={() => setShowHealthImport(true)} className="quick-action-btn">
+            <span>📱</span>
+            <span>Sync Data</span>
+          </button>
+
           <button onClick={() => setShowProgressPhotos(true)} className="quick-action-btn">
             <span>📸</span>
             <span>Progress</span>
