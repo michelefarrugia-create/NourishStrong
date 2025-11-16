@@ -841,7 +841,13 @@ def get_activities(user = Depends(get_current_user)):
 
 @app.get("/api/activities/stats")
 def get_activity_stats(user = Depends(get_current_user)):
-    """Get activity statistics"""
+    """Get activity statistics - only for coaches"""
+    # Regular users should not see their stats
+    if user["role"] != "coach":
+        return {
+            "message": "Activity stats are private and only visible to your coach"
+        }
+    
     activities = list(activities_collection.find({"user_id": user["user_id"]}))
     
     if not activities:
