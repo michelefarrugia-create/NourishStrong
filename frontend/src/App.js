@@ -1621,9 +1621,112 @@ function App() {
           </div>
         </div>
       </div>
+      ) : (
+        <div className="profile-page">
+          <div className="profile-container">
+            <h2 className="page-title">Your Profile</h2>
+            
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+
+            <div className="profile-content">
+              <div className="profile-picture-section">
+                <div className="profile-picture-container">
+                  {profilePicturePreview ? (
+                    <img src={profilePicturePreview} alt="Profile" className="profile-picture" />
+                  ) : (
+                    <div className="profile-picture-placeholder">
+                      <span>📷</span>
+                      <p>Add Photo</p>
+                    </div>
+                  )}
+                </div>
+                <label className="btn-secondary" style={{marginTop: '16px'}}>
+                  {profilePicturePreview ? 'Change Photo' : 'Upload Photo'}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleProfilePictureUpload}
+                    style={{display: 'none'}}
+                  />
+                </label>
+              </div>
+
+              <form onSubmit={handleUpdateProfile} className="profile-form">
+                <div className="form-section">
+                  <h3>Basic Information</h3>
+                  
+                  <label className="input-label">Age</label>
+                  <input
+                    type="number"
+                    placeholder="Your age"
+                    value={profileData.age}
+                    onChange={(e) => setProfileData({...profileData, age: e.target.value})}
+                    className="input-field"
+                  />
+                  
+                  <label className="input-label">Gender</label>
+                  <select
+                    value={profileData.gender}
+                    onChange={(e) => setProfileData({...profileData, gender: e.target.value})}
+                    className="input-field"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="non-binary">Non-Binary</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
+                  
+                  <label className="input-label">Height (cm)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Your height in cm"
+                    value={profileData.height}
+                    onChange={(e) => setProfileData({...profileData, height: e.target.value})}
+                    className="input-field"
+                  />
+                </div>
+
+                <div className="form-section">
+                  <h3>Activity & Goals</h3>
+                  
+                  <label className="input-label">Activity Level</label>
+                  <select
+                    value={profileData.activity_level}
+                    onChange={(e) => setProfileData({...profileData, activity_level: e.target.value})}
+                    className="input-field"
+                  >
+                    <option value="">Select Activity Level</option>
+                    <option value="sedentary">Sedentary (little or no exercise)</option>
+                    <option value="light">Lightly active (1-3 days/week)</option>
+                    <option value="moderate">Moderately active (3-5 days/week)</option>
+                    <option value="very">Very active (6-7 days/week)</option>
+                    <option value="extra">Extra active (athlete)</option>
+                  </select>
+                  
+                  <label className="input-label">Goal Weight (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Your goal weight"
+                    value={profileData.goal_weight}
+                    onChange={(e) => setProfileData({...profileData, goal_weight: e.target.value})}
+                    className="input-field"
+                  />
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%', marginTop: '24px'}}>
+                  {loading ? 'Saving...' : 'Save Profile'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
-      {showProfile && renderProfileModal()}
       {showCoachAssignment && renderCoachAssignmentModal()}
       {showBadges && renderBadgesModal()}
       {showAnalytics && renderAnalyticsModal()}
