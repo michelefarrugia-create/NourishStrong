@@ -297,6 +297,61 @@ function App() {
     }
   };
 
+  const handleUploadProgressPhoto = async () => {
+    if (!capturedProgressPhoto) {
+      setError('Please capture or upload a progress photo');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const base64Data = capturedProgressPhoto.split(',')[1] || capturedProgressPhoto;
+      
+      await apiCall('/api/progress-photos', 'POST', {
+        image_base64: base64Data,
+        weight: progressPhotoWeight ? parseFloat(progressPhotoWeight) : null,
+        notes: progressPhotoNotes
+      });
+      
+      setSuccess('Progress photo uploaded!');
+      setCapturedProgressPhoto(null);
+      setProgressPhotoWeight('');
+      setProgressPhotoNotes('');
+      fetchProgressPhotos();
+      setShowProgressPhotos(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProgressPhoto = async (photoId) => {
+    try {
+      await apiCall(`/api/progress-photos/${photoId}`, 'DELETE');
+      fetchProgressPhotos();
+    } catch (err) {
+      setError('Failed to delete progress photo');
+    }
+  };
+
+  const handleCompleteChallenge = async () => {
+    if (!dailyChallenge) return;
+    
+    try {
+      await apiCall('/api/gamification/challenge/complete', 'POST', {
+        challenge_id: dailyChallenge.challenge_id
+      });
+      setSuccess('Challenge completed! 🎉');
+      fetchGameificationData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
