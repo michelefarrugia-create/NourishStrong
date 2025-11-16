@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from typing import Optional, List
+from collections import Counter
 import os
 import jwt
 import bcrypt
@@ -34,18 +35,32 @@ client = MongoClient(MONGO_URL)
 db = client['weight_loss_app']
 users_collection = db['users']
 meals_collection = db['meals']
+progress_photos_collection = db['progress_photos']
+challenges_collection = db['challenges']
 
 # JWT settings
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = "HS256"
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', 'sk-emergent-2F8757d69949133Ef3')
 
+# Badge definitions
+BADGES = {
+    "first_meal": {"name": "First Steps", "description": "Logged your first meal", "icon": "🎯"},
+    "week_streak": {"name": "Week Warrior", "description": "7-day logging streak", "icon": "🔥"},
+    "month_streak": {"name": "Month Master", "description": "30-day logging streak", "icon": "⭐"},
+    "meals_10": {"name": "Getting Started", "description": "Logged 10 meals", "icon": "🌱"},
+    "meals_50": {"name": "Committed", "description": "Logged 50 meals", "icon": "💪"},
+    "meals_100": {"name": "Century Club", "description": "Logged 100 meals", "icon": "🏆"},
+    "early_bird": {"name": "Early Bird", "description": "Logged breakfast before 9am", "icon": "🌅"},
+    "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
+}
+
 # Models
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
     name: str
-    role: str = "user"  # "user" or "coach"
+    role: str = "user"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -65,6 +80,14 @@ class UserProfile(BaseModel):
 
 class CoachAssignment(BaseModel):
     coach_email: str
+
+class ProgressPhoto(BaseModel):
+    image_base64: str
+    weight: Optional[float] = None
+    notes: Optional[str] = ""
+
+class DailyChallengeComplete(BaseModel):
+    challenge_id: str
 
 # Helper functions
 def hash_password(password: str) -> str:
@@ -101,20 +124,152 @@ def require_coach(user = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Coach access required")
     return user
 
+def calculate_streak(user_id: str) -> int:
+    """Calculate current consecutive days streak"""
+    meals = list(meals_collection.find({"user_id": user_id}).sort("timestamp", -1))
+    
+    if not meals:
+        return 0
+    
+    # Get unique days with meals
+    days_with_meals = set()
+    for meal in meals:
+        meal_date = datetime.fromisoformat(meal["timestamp"]).date()
+        days_with_meals.add(meal_date)
+    
+    # Sort days in descending order
+    sorted_days = sorted(days_with_meals, reverse=True)
+    
+    if not sorted_days:
+        return 0
+    
+    # Check if today or yesterday has a meal (streak is still active)
+    today = datetime.utcnow().date()
+    yesterday = today - timedelta(days=1)
+    
+    if sorted_days[0] not in [today, yesterday]:
+        return 0  # Streak is broken
+    
+    # Count consecutive days
+    streak = 1
+    current_date = sorted_days[0]
+    
+    for i in range(1, len(sorted_days)):
+        expected_date = current_date - timedelta(days=1)
+        if sorted_days[i] == expected_date:
+            streak += 1
+            current_date = sorted_days[i]
+        else:
+            break
+    
+    return streak
+
+def check_and_award_badges(user_id: str) -> List[str]:
+    """Check and award new badges to user"""
+    user = users_collection.find_one({"user_id": user_id})
+    current_badges = set(user.get("badges", []))
+    new_badges = []
+    
+    # Get user stats
+    meals = list(meals_collection.find({"user_id": user_id}))
+    meal_count = len(meals)
+    streak = calculate_streak(user_id)
+    
+    # Check badge conditions
+    if meal_count >= 1 and "first_meal" not in current_badges:
+        new_badges.append("first_meal")
+    
+    if meal_count >= 10 and "meals_10" not in current_badges:
+        new_badges.append("meals_10")
+    
+    if meal_count >= 50 and "meals_50" not in current_badges:
+        new_badges.append("meals_50")
+    
+    if meal_count >= 100 and "meals_100" not in current_badges:
+        new_badges.append("meals_100")
+    
+    if streak >= 7 and "week_streak" not in current_badges:
+        new_badges.append("week_streak")
+    
+    if streak >= 30 and "month_streak" not in current_badges:
+        new_badges.append("month_streak")
+    
+    # Check for early bird (meal before 9am)
+    for meal in meals:
+        meal_time = datetime.fromisoformat(meal["timestamp"])
+        if meal_time.hour < 9 and "early_bird" not in current_badges:
+            new_badges.append("early_bird")
+            break
+    
+    # Check for consistent (3 meals in one day)
+    meals_by_day = {}
+    for meal in meals:
+        meal_date = datetime.fromisoformat(meal["timestamp"]).date()
+        meals_by_day[meal_date] = meals_by_day.get(meal_date, 0) + 1
+    
+    if any(count >= 3 for count in meals_by_day.values()) and "consistent" not in current_badges:
+        new_badges.append("consistent")
+    
+    # Update user badges
+    if new_badges:
+        users_collection.update_one(
+            {"user_id": user_id},
+            {"$addToSet": {"badges": {"$each": new_badges}}}
+        )
+    
+    return new_badges
+
+def generate_daily_challenge(user_id: str) -> dict:
+    """Generate daily challenge for user"""
+    today = datetime.utcnow().date().isoformat()
+    
+    # Check if challenge already exists for today
+    existing = challenges_collection.find_one({
+        "user_id": user_id,
+        "date": today
+    })
+    
+    if existing:
+        existing.pop('_id', None)
+        return existing
+    
+    # Create new challenge
+    challenges = [
+        {"id": "log_breakfast", "title": "Log Your Breakfast", "description": "Start your day right by logging breakfast", "icon": "🌅"},
+        {"id": "log_3_meals", "title": "Log 3 Meals Today", "description": "Track all your main meals", "icon": "🍽️"},
+        {"id": "early_meal", "title": "Early Bird Special", "description": "Log a meal before 9am", "icon": "⏰"},
+        {"id": "add_notes", "title": "Mindful Eating", "description": "Add notes to your meal today", "icon": "📝"},
+        {"id": "log_any_meal", "title": "Stay Consistent", "description": "Log at least one meal today", "icon": "✨"},
+    ]
+    
+    import random
+    challenge = random.choice(challenges)
+    
+    challenge_doc = {
+        "challenge_id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "date": today,
+        "challenge": challenge,
+        "completed": False,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    
+    challenges_collection.insert_one(challenge_doc)
+    challenge_doc.pop('_id', None)
+    
+    return challenge_doc
+
 async def analyze_food_image(image_base64: str) -> dict:
     """Analyze food image using GPT-4o with Emergent LLM key"""
     try:
-        # Create chat instance
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"food-analysis-{uuid.uuid4()}",
             system_message="You are a nutritionist expert. You MUST respond with ONLY valid JSON, no additional text or explanations."
         ).with_model("openai", "gpt-4o")
         
-        # Create image content
         image_content = ImageContent(image_base64=image_base64)
         
-        # Create message with stricter JSON requirements
         user_message = UserMessage(
             text="""Analyze this food image and respond with ONLY this exact JSON format (no markdown, no explanations, no additional text):
 {"food_name": "name of the dish", "calories": 250, "protein": 20, "carbs": 30, "fats": 10, "portion_size": "1 serving", "confidence": "medium"}
@@ -123,34 +278,27 @@ Replace the example values with your analysis. Respond with ONLY the JSON object
             file_contents=[image_content]
         )
         
-        # Get response
         response = await chat.send_message(user_message)
         print(f"Raw AI response: {response}")
         
-        # Parse response with better error handling
         import json
         import re
         
-        # Clean the response
         response_text = response.strip()
         
-        # Try to find JSON in the response using regex
         json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
         json_matches = re.findall(json_pattern, response_text)
         
         if json_matches:
             response_text = json_matches[0]
         else:
-            # Remove markdown code blocks if present
             if "```json" in response_text:
                 response_text = response_text.split("```json")[1].split("```")[0].strip()
             elif "```" in response_text:
                 response_text = response_text.split("```")[1].split("```")[0].strip()
         
-        # Try to parse JSON
         nutrition_data = json.loads(response_text)
         
-        # Validate required fields
         required_fields = ["food_name", "calories", "protein", "carbs", "fats", "portion_size", "confidence"]
         for field in required_fields:
             if field not in nutrition_data:
@@ -163,7 +311,6 @@ Replace the example values with your analysis. Respond with ONLY the JSON object
         print(f"Error analyzing food image: {str(e)}")
         print(f"Raw response was: {response if 'response' in locals() else 'No response received'}")
         
-        # Return realistic default values if analysis fails
         return {
             "food_name": "Mixed meal",
             "calories": 350,
@@ -182,11 +329,9 @@ def health_check():
 
 @app.post("/api/auth/register")
 def register(user_data: UserRegister):
-    # Check if user exists
     if users_collection.find_one({"email": user_data.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create user
     user_id = str(uuid.uuid4())
     user = {
         "user_id": user_id,
@@ -196,12 +341,13 @@ def register(user_data: UserRegister):
         "role": user_data.role,
         "created_at": datetime.utcnow().isoformat(),
         "profile": {},
-        "coach_id": None,  # For users to store their assigned coach
-        "clients": []  # For coaches to store their client IDs
+        "coach_id": None,
+        "clients": [],
+        "badges": [],
+        "streak_record": 0
     }
     users_collection.insert_one(user)
     
-    # Create token
     token = create_token(user_id, user_data.email, user_data.role)
     
     return {
@@ -235,7 +381,6 @@ def login(user_data: UserLogin):
 
 @app.get("/api/auth/me")
 def get_me(user = Depends(get_current_user)):
-    # Get coach info if user has a coach
     coach_info = None
     if user.get("coach_id"):
         coach = users_collection.find_one({"user_id": user["coach_id"]})
@@ -252,7 +397,9 @@ def get_me(user = Depends(get_current_user)):
         "name": user["name"],
         "role": user["role"],
         "profile": user.get("profile", {}),
-        "coach": coach_info
+        "coach": coach_info,
+        "badges": user.get("badges", []),
+        "streak_record": user.get("streak_record", 0)
     }
 
 @app.put("/api/profile")
@@ -265,22 +412,18 @@ def update_profile(profile_data: UserProfile, user = Depends(get_current_user)):
 
 @app.post("/api/assign-coach")
 def assign_coach(assignment: CoachAssignment, user = Depends(get_current_user)):
-    # Only regular users can assign coaches
     if user["role"] != "user":
         raise HTTPException(status_code=400, detail="Only users can assign coaches")
     
-    # Find the coach by email
     coach = users_collection.find_one({"email": assignment.coach_email, "role": "coach"})
     if not coach:
         raise HTTPException(status_code=404, detail="Coach not found with this email")
     
-    # Update user's coach_id
     users_collection.update_one(
         {"user_id": user["user_id"]},
         {"$set": {"coach_id": coach["user_id"]}}
     )
     
-    # Add user to coach's client list
     users_collection.update_one(
         {"user_id": coach["user_id"]},
         {"$addToSet": {"clients": user["user_id"]}}
@@ -296,20 +439,17 @@ def assign_coach(assignment: CoachAssignment, user = Depends(get_current_user)):
 
 @app.delete("/api/remove-coach")
 def remove_coach(user = Depends(get_current_user)):
-    # Only regular users can remove coaches
     if user["role"] != "user":
         raise HTTPException(status_code=400, detail="Only users can remove coaches")
     
     if not user.get("coach_id"):
         raise HTTPException(status_code=400, detail="No coach assigned")
     
-    # Remove user from coach's client list
     users_collection.update_one(
         {"user_id": user["coach_id"]},
         {"$pull": {"clients": user["user_id"]}}
     )
     
-    # Remove coach_id from user
     users_collection.update_one(
         {"user_id": user["user_id"]},
         {"$set": {"coach_id": None}}
@@ -317,12 +457,159 @@ def remove_coach(user = Depends(get_current_user)):
     
     return {"message": "Coach removed successfully"}
 
+@app.get("/api/gamification/streak")
+def get_streak(user = Depends(get_current_user)):
+    current_streak = calculate_streak(user["user_id"])
+    streak_record = user.get("streak_record", 0)
+    
+    # Update record if current streak is higher
+    if current_streak > streak_record:
+        users_collection.update_one(
+            {"user_id": user["user_id"]},
+            {"$set": {"streak_record": current_streak}}
+        )
+        streak_record = current_streak
+    
+    return {
+        "current_streak": current_streak,
+        "streak_record": streak_record
+    }
+
+@app.get("/api/gamification/badges")
+def get_badges(user = Depends(get_current_user)):
+    user_badges = user.get("badges", [])
+    
+    badges_info = []
+    for badge_id in user_badges:
+        if badge_id in BADGES:
+            badge_data = BADGES[badge_id].copy()
+            badge_data["id"] = badge_id
+            badges_info.append(badge_data)
+    
+    # Get all available badges
+    all_badges = []
+    for badge_id, badge_data in BADGES.items():
+        badge_info = badge_data.copy()
+        badge_info["id"] = badge_id
+        badge_info["earned"] = badge_id in user_badges
+        all_badges.append(badge_info)
+    
+    return {
+        "earned_badges": badges_info,
+        "all_badges": all_badges,
+        "total_earned": len(badges_info),
+        "total_available": len(BADGES)
+    }
+
+@app.get("/api/gamification/challenge")
+def get_daily_challenge(user = Depends(get_current_user)):
+    challenge = generate_daily_challenge(user["user_id"])
+    return challenge
+
+@app.post("/api/gamification/challenge/complete")
+def complete_challenge(challenge_data: DailyChallengeComplete, user = Depends(get_current_user)):
+    result = challenges_collection.update_one(
+        {"challenge_id": challenge_data.challenge_id, "user_id": user["user_id"]},
+        {"$set": {"completed": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    return {"message": "Challenge completed!", "celebration": True}
+
+@app.get("/api/analytics/overview")
+def get_analytics_overview(user = Depends(get_current_user)):
+    meals = list(meals_collection.find({"user_id": user["user_id"]}))
+    
+    if not meals:
+        return {
+            "total_meals": 0,
+            "meals_this_week": 0,
+            "meals_this_month": 0,
+            "current_streak": 0,
+            "meal_times": [],
+            "weekly_trend": []
+        }
+    
+    now = datetime.utcnow()
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+    
+    meals_this_week = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]) >= week_ago)
+    meals_this_month = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]) >= month_ago)
+    
+    # Analyze meal times
+    meal_hours = [datetime.fromisoformat(m["timestamp"]).hour for m in meals]
+    hour_counts = Counter(meal_hours)
+    most_common_hours = hour_counts.most_common(3)
+    
+    # Weekly trend (last 7 days)
+    weekly_data = []
+    for i in range(7):
+        day = now - timedelta(days=6-i)
+        day_date = day.date()
+        day_meals = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]).date() == day_date)
+        weekly_data.append({
+            "date": day_date.isoformat(),
+            "day_name": day.strftime("%a"),
+            "meals": day_meals
+        })
+    
+    return {
+        "total_meals": len(meals),
+        "meals_this_week": meals_this_week,
+        "meals_this_month": meals_this_month,
+        "current_streak": calculate_streak(user["user_id"]),
+        "meal_times": [{"hour": h, "count": c} for h, c in most_common_hours],
+        "weekly_trend": weekly_data
+    }
+
+@app.post("/api/progress-photos")
+def upload_progress_photo(photo_data: ProgressPhoto, user = Depends(get_current_user)):
+    photo_id = str(uuid.uuid4())
+    photo = {
+        "photo_id": photo_id,
+        "user_id": user["user_id"],
+        "image_base64": photo_data.image_base64,
+        "weight": photo_data.weight,
+        "notes": photo_data.notes,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    progress_photos_collection.insert_one(photo)
+    
+    return {
+        "photo_id": photo_id,
+        "message": "Progress photo uploaded successfully!"
+    }
+
+@app.get("/api/progress-photos")
+def get_progress_photos(user = Depends(get_current_user)):
+    photos = list(progress_photos_collection.find({"user_id": user["user_id"]}).sort("timestamp", 1))
+    
+    for photo in photos:
+        photo.pop('_id', None)
+    
+    return {"photos": photos}
+
+@app.delete("/api/progress-photos/{photo_id}")
+def delete_progress_photo(photo_id: str, user = Depends(get_current_user)):
+    photo = progress_photos_collection.find_one({"photo_id": photo_id})
+    
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    if photo["user_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    progress_photos_collection.delete_one({"photo_id": photo_id})
+    return {"message": "Photo deleted successfully"}
+
 @app.post("/api/meals")
 async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
-    # Analyze the food image
     nutrition_data = await analyze_food_image(meal_data.image_base64)
     
-    # Create meal entry
     meal_id = str(uuid.uuid4())
     meal = {
         "meal_id": meal_id,
@@ -335,16 +622,23 @@ async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
     }
     meals_collection.insert_one(meal)
     
-    # Return supportive message without numbers for regular users
+    # Check for new badges
+    new_badges = check_and_award_badges(user["user_id"])
+    
     if user["role"] == "user":
-        return {
+        response = {
             "meal_id": meal_id,
             "message": f"Great job logging your meal! 🎉 {nutrition_data.get('food_name', 'Your food')} looks delicious. Keep up the amazing work on your journey!",
             "food_name": nutrition_data.get('food_name', 'Unknown'),
             "timestamp": meal["timestamp"]
         }
+        
+        if new_badges:
+            response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+            response["celebration"] = True
+        
+        return response
     else:
-        # Coaches can see all data
         return {
             "meal_id": meal_id,
             "nutrition": nutrition_data,
@@ -355,11 +649,9 @@ async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
 def get_meals(user = Depends(get_current_user)):
     meals = list(meals_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
     
-    # Remove MongoDB _id
     for meal in meals:
         meal.pop('_id', None)
         
-        # Hide nutrition data from regular users
         if user["role"] == "user":
             meal.pop('nutrition', None)
     
@@ -372,13 +664,11 @@ def get_meal(meal_id: str, user = Depends(get_current_user)):
     if not meal:
         raise HTTPException(status_code=404, detail="Meal not found")
     
-    # Check if user owns the meal or is a coach
     if meal["user_id"] != user["user_id"] and user["role"] != "coach":
         raise HTTPException(status_code=403, detail="Access denied")
     
     meal.pop('_id', None)
     
-    # Hide nutrition data from regular users
     if user["role"] == "user":
         meal.pop('nutrition', None)
     
@@ -400,7 +690,6 @@ def delete_meal(meal_id: str, user = Depends(get_current_user)):
 # Coach-only endpoints
 @app.get("/api/coach/users")
 def get_all_users(coach = Depends(require_coach)):
-    # Get only assigned clients
     client_ids = coach.get("clients", [])
     
     if not client_ids:
@@ -416,16 +705,13 @@ def get_all_users(coach = Depends(require_coach)):
 
 @app.get("/api/coach/users/{user_id}/meals")
 def get_user_meals(user_id: str, coach = Depends(require_coach)):
-    # Check if this user is assigned to this coach
     if user_id not in coach.get("clients", []):
         raise HTTPException(status_code=403, detail="This user is not assigned to you")
     
-    # Get user info
     user = users_collection.find_one({"user_id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Get all meals for this user
     meals = list(meals_collection.find({"user_id": user_id}).sort("timestamp", -1))
     
     for meal in meals:
@@ -443,7 +729,6 @@ def get_user_meals(user_id: str, coach = Depends(require_coach)):
 
 @app.get("/api/coach/users/{user_id}/stats")
 def get_user_stats(user_id: str, coach = Depends(require_coach)):
-    # Check if this user is assigned to this coach
     if user_id not in coach.get("clients", []):
         raise HTTPException(status_code=403, detail="This user is not assigned to you")
     
@@ -467,7 +752,47 @@ def get_user_stats(user_id: str, coach = Depends(require_coach)):
         "total_protein": total_protein,
         "total_carbs": total_carbs,
         "total_fats": total_fats,
-        "avg_calories_per_meal": total_calories / len(meals) if meals else 0
+        "avg_calories_per_meal": total_calories / len(meals) if meals else 0,
+        "current_streak": calculate_streak(user_id)
+    }
+
+@app.get("/api/coach/users/{user_id}/analytics")
+def get_user_analytics(user_id: str, coach = Depends(require_coach)):
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    meals = list(meals_collection.find({"user_id": user_id}))
+    
+    if not meals:
+        return {
+            "total_meals": 0,
+            "meals_this_week": 0,
+            "current_streak": 0,
+            "weekly_trend": []
+        }
+    
+    now = datetime.utcnow()
+    week_ago = now - timedelta(days=7)
+    
+    meals_this_week = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]) >= week_ago)
+    
+    # Weekly trend
+    weekly_data = []
+    for i in range(7):
+        day = now - timedelta(days=6-i)
+        day_date = day.date()
+        day_meals = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]).date() == day_date)
+        weekly_data.append({
+            "date": day_date.isoformat(),
+            "day_name": day.strftime("%a"),
+            "meals": day_meals
+        })
+    
+    return {
+        "total_meals": len(meals),
+        "meals_this_week": meals_this_week,
+        "current_streak": calculate_streak(user_id),
+        "weekly_trend": weekly_data
     }
 
 if __name__ == "__main__":
