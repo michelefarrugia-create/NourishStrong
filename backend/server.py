@@ -152,7 +152,7 @@ def create_token(user_id: str, email: str, role: str) -> str:
 def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-    except:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
