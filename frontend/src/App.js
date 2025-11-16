@@ -798,6 +798,7 @@ function App() {
         <p className="auth-subtitle">Continue your wellness journey</p>
         
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
         
         <form onSubmit={handleLogin}>
           <input
@@ -816,6 +817,17 @@ function App() {
             required
             className="input-field"
           />
+          
+          <div className="forgot-password-link">
+            <button 
+              type="button"
+              onClick={() => setCurrentView('forgot-password')} 
+              className="link-button"
+            >
+              Forgot Password?
+            </button>
+          </div>
+          
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
