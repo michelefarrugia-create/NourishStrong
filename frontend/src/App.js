@@ -1370,7 +1370,7 @@ function App() {
     </div>
   );
 
-  const renderUserDashboard = () => {
+  const renderUserDashboard = () => (
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-content">
