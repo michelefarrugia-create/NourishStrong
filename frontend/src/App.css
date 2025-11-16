@@ -1444,6 +1444,19 @@ body {
   .capture-options .upload-label {
     width: 100%;
   }
+
+  .stats-quick-view {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stat-item {
+    min-width: 100%;
+  }
+
+  .activity-stats {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 480px) {
