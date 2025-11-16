@@ -1702,6 +1702,30 @@ body {
   .activity-stats {
     flex-wrap: wrap;
   }
+
+  .header-tabs {
+    order: -1;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .tab-button {
+    flex: 1;
+  }
+
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-picture-section {
+    padding: 24px;
+  }
+
+  .profile-picture-container {
+    width: 150px;
+    height: 150px;
+  }
 }
 
 @media (max-width: 480px) {
