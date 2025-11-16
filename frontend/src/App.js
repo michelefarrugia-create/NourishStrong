@@ -871,14 +871,27 @@ function App() {
             required
             className="input-field"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="input-field"
-          />
+          <div style={{position: 'relative'}}>
+            <input
+              type="password"
+              placeholder="Password (min 8 chars, uppercase, lowercase, number)"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                checkPasswordStrength(e.target.value);
+              }}
+              required
+              className="input-field"
+            />
+            {password && passwordStrength.message && (
+              <div className={`password-strength-indicator ${passwordStrength.strength}`}>
+                <span className="strength-icon">
+                  {passwordStrength.valid ? '✓' : '⚠'}
+                </span>
+                {passwordStrength.message}
+              </div>
+            )}
+          </div>
           
           <div className="role-selector">
             <label className="role-label">I am a:</label>
