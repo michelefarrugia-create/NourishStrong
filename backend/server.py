@@ -1393,17 +1393,6 @@ def delete_movement(movement_id: str, user = Depends(get_current_user)):
     movement_collection.delete_one({"movement_id": movement_id})
     return {"message": "Movement log deleted"}
 
-            "consistency": current_week["consistency_score"] - previous_week["consistency_score"]
-        }
-    else:
-        improvements = None
-    
-    return {
-        "weeks_data": weeks_data,
-        "improvements": improvements,
-        "trending_up": improvements["meals"] > 0 if improvements else None
-    }
-
 @app.get("/api/rewards")
 def get_rewards_status(user = Depends(get_current_user)):
     """Get user's current points and available rewards"""
