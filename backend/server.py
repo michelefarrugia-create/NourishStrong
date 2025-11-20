@@ -1840,16 +1840,6 @@ def delete_body_appreciation(appreciation_id: str, user = Depends(get_current_us
     body_appreciation_collection.delete_one({"appreciation_id": appreciation_id})
     return {"message": "Appreciation deleted"}
 
-@app.get("/api/movement")
-def get_movements(user = Depends(get_current_user)):
-    """Get user's movement log"""
-    movements = list(movement_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
-    
-    for movement in movements:
-        movement.pop('_id', None)
-    
-    return {"movements": movements}
-
 @app.get("/api/movement/insights")
 def get_movement_insights(user = Depends(get_current_user)):
     """Get personalized movement insights"""
