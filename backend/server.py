@@ -102,6 +102,13 @@ class UserLogin(BaseModel):
 class MealCreate(BaseModel):
     image_base64: str
     notes: Optional[str] = ""
+    # Mood journal fields
+    before_mood: Optional[str] = None  # "happy", "neutral", "low"
+    before_energy: Optional[str] = None  # "energized", "moderate", "tired"
+    hunger_level: Optional[int] = None  # 1-10: 1=starving, 10=not hungry
+    after_mood: Optional[str] = None  # "happy", "neutral", "low"
+    after_energy: Optional[str] = None  # "energized", "moderate", "tired"
+    satisfaction_level: Optional[int] = None  # 1-10: 1=very full, 10=still hungry
 
 class UserProfile(BaseModel):
     age: Optional[int] = None
