@@ -93,6 +93,38 @@ BODY_HONOR_PROMPTS = [
 
 MOTIVATIONAL_QUOTES = BODY_HONOR_PROMPTS  # Keep for backward compatibility
 
+# Joyful movement types (no performance metrics)
+MOVEMENT_TYPES = [
+    {"id": "walking", "name": "Walking", "icon": "🚶", "category": "joyful"},
+    {"id": "stretching", "name": "Stretching", "icon": "🧘", "category": "gentle"},
+    {"id": "dancing", "name": "Dancing", "icon": "💃", "category": "joyful"},
+    {"id": "playing", "name": "Playing (kids/pets)", "icon": "🎾", "category": "playful"},
+    {"id": "gardening", "name": "Gardening", "icon": "🌱", "category": "joyful"},
+    {"id": "cleaning", "name": "Active Cleaning", "icon": "🏠", "category": "joyful"},
+    {"id": "swimming", "name": "Swimming", "icon": "🏊", "category": "joyful"},
+    {"id": "hiking", "name": "Hiking", "icon": "🥾", "category": "nature"},
+    {"id": "biking", "name": "Biking", "icon": "🚴", "category": "joyful"},
+    {"id": "yoga", "name": "Yoga", "icon": "🧘‍♀️", "category": "mindful"},
+    {"id": "tai_chi", "name": "Tai Chi", "icon": "☯️", "category": "mindful"},
+    {"id": "sports", "name": "Sports/Games", "icon": "⚽", "category": "playful"},
+    {"id": "social_walk", "name": "Social Walk", "icon": "👫", "category": "social"},
+    {"id": "group_class", "name": "Group Class", "icon": "👥", "category": "social"},
+    {"id": "rest", "name": "Honoring Rest", "icon": "🌙", "category": "rest"},
+    {"id": "other", "name": "Other Movement", "icon": "✨", "category": "joyful"}
+]
+
+# Movement intentions (why, not how)
+MOVEMENT_INTENTIONS = [
+    {"id": "joy", "name": "For Joy", "icon": "😊"},
+    {"id": "stress_relief", "name": "Stress Relief", "icon": "🌊"},
+    {"id": "connection", "name": "Social Connection", "icon": "🤝"},
+    {"id": "felt_good", "name": "It Felt Good", "icon": "✨"},
+    {"id": "nature", "name": "To Be in Nature", "icon": "🌳"},
+    {"id": "play", "name": "To Play", "icon": "🎈"},
+    {"id": "clear_head", "name": "Clear My Head", "icon": "💭"},
+    {"id": "body_asked", "name": "My Body Asked For It", "icon": "💚"}
+]
+
 # Models
 class UserRegister(BaseModel):
     email: EmailStr
