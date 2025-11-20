@@ -35,12 +35,11 @@ app.add_middleware(
 # MongoDB setup
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
 client = MongoClient(MONGO_URL)
-db = client['weight_loss_app']
+db = client['nourishstrong_app']
 users_collection = db['users']
 meals_collection = db['meals']
-progress_photos_collection = db['progress_photos']
 challenges_collection = db['challenges']
-weight_logs_collection = db['weight_logs']
+body_prompts_collection = db['body_prompts']
 password_reset_tokens_collection = db['password_reset_tokens']
 
 # JWT settings
