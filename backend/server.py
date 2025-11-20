@@ -1211,6 +1211,16 @@ def get_progress_comparison(user = Depends(get_current_user)):
         improvements = {
             "meals": current_week["total_meals"] - previous_week["total_meals"],
             "days": current_week["days_logged"] - previous_week["days_logged"],
+            "consistency": current_week["consistency_score"] - previous_week["consistency_score"]
+        }
+    else:
+        improvements = None
+    
+    return {
+        "weeks_data": weeks_data,
+        "improvements": improvements,
+        "trending_up": improvements["meals"] > 0 if improvements else None
+    }
 
 @app.get("/api/movement/types")
 def get_movement_types():
