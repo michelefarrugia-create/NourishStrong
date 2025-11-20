@@ -1393,6 +1393,398 @@ def log_movement(movement_data: MovementLog, user = Depends(get_current_user)):
         "notes": movement_data.notes,
         "timestamp": datetime.utcnow().isoformat(),
         "created_at": datetime.utcnow().isoformat()
+
+# ===== SENSORY EATING EXPLORATION =====
+@app.get("/api/sensory/options")
+def get_sensory_options():
+    """Get all sensory eating options"""
+    return {"sensory_options": SENSORY_OPTIONS}
+
+@app.post("/api/sensory")
+def log_sensory_experience(sensory_data: SensoryMealLog, user = Depends(get_current_user)):
+    """Log sensory experience for a meal"""
+    # Verify meal exists
+    meal = meals_collection.find_one({"meal_id": sensory_data.meal_id, "user_id": user["user_id"]})
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    
+    sensory_id = str(uuid.uuid4())
+    sensory_log = {
+        "sensory_id": sensory_id,
+        "user_id": user["user_id"],
+        "meal_id": sensory_data.meal_id,
+        "textures": sensory_data.textures,
+        "flavors": sensory_data.flavors,
+        "temperatures": sensory_data.temperatures,
+        "satisfaction_rating": sensory_data.satisfaction_rating,
+        "sensory_variety": sensory_data.sensory_variety,
+        "most_satisfying_aspect": sensory_data.most_satisfying_aspect,
+        "notes": sensory_data.notes,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    sensory_logs_collection.insert_one(sensory_log)
+    
+    # Award points
+    points_earned = 10
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
+    )
+    
+    # Check badges
+    new_badges = check_and_award_badges(user["user_id"])
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
+            )
+            points_earned += badge_points
+    
+    response = {
+        "sensory_id": sensory_id,
+        "message": "Thank you for noticing what truly satisfies you! 👅 Sensory awareness helps you find real satisfaction.",
+        "points_earned": points_earned
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/sensory")
+def get_sensory_logs(user = Depends(get_current_user)):
+    """Get user's sensory logs"""
+    logs = list(sensory_logs_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    for log in logs:
+        log.pop('_id', None)
+    
+    return {"sensory_logs": logs}
+
+@app.get("/api/sensory/insights")
+def get_sensory_insights(user = Depends(get_current_user)):
+    """Get personalized sensory insights"""
+    logs = list(sensory_logs_collection.find({"user_id": user["user_id"]}))
+    
+    if len(logs) < 3:
+        return {
+            "insights": ["Log a few meals to discover your sensory preferences! 👅"],
+            "favorite_textures": [],
+            "favorite_flavors": [],
+            "satisfaction_average": None
+        }
+    
+    from collections import Counter
+    
+    # Analyze preferences
+    all_textures = []
+    all_flavors = []
+    satisfactions = []
+    
+    for log in logs:
+        if log.get("textures"):
+            all_textures.extend(log.get("textures", []))
+        if log.get("flavors"):
+            all_flavors.extend(log.get("flavors", []))
+        if log.get("satisfaction_rating"):
+            satisfactions.append(log.get("satisfaction_rating"))
+    
+    favorite_textures = Counter(all_textures).most_common(3)
+    favorite_flavors = Counter(all_flavors).most_common(3)
+    avg_satisfaction = sum(satisfactions) / len(satisfactions) if satisfactions else None
+    
+    # Generate insights
+    insights = []
+    if favorite_textures:
+        texture_names = ", ".join([t[0] for t in favorite_textures[:2]])
+        insights.append(f"🥕 You seem drawn to {texture_names} textures. Your body knows what it likes!")
+    
+    if favorite_flavors:
+        flavor_names = ", ".join([f[0] for f in favorite_flavors[:2]])
+        insights.append(f"🍯 {flavor_names.title()} flavors bring you satisfaction. Honor those cravings!")
+    
+    if avg_satisfaction and avg_satisfaction >= 7:
+        insights.append(f"✨ Your sensory satisfaction is high ({avg_satisfaction:.1f}/10). You're finding truly satisfying foods!")
+    
+    variety_meals = sum(1 for log in logs if log.get("sensory_variety"))
+    if variety_meals >= len(logs) * 0.7:
+        insights.append("🌈 You're great at including sensory variety in meals. This supports satisfaction!")
+    
+    return {
+        "insights": insights if insights else ["Keep exploring! 👅"],
+        "favorite_textures": [{"texture": t[0], "count": t[1]} for t in favorite_textures],
+        "favorite_flavors": [{"flavor": f[0], "count": f[1]} for f in favorite_flavors],
+        "satisfaction_average": round(avg_satisfaction, 1) if avg_satisfaction else None,
+        "total_logs": len(logs)
+    }
+
+# ===== VALUES-BASED WELLNESS GOALS =====
+@app.get("/api/values/options")
+def get_wellness_values():
+    """Get all wellness values"""
+    return {"values": WELLNESS_VALUES}
+
+@app.post("/api/values/goals")
+def create_values_goal(goal_data: ValueBasedGoal, user = Depends(get_current_user)):
+    """Create a value-based wellness goal (NOT outcome-based)"""
+    goal_id = str(uuid.uuid4())
+    goal = {
+        "goal_id": goal_id,
+        "user_id": user["user_id"],
+        "value_name": goal_data.value_name,
+        "value_description": goal_data.value_description,
+        "behavior_intentions": goal_data.behavior_intentions,
+        "created_at": datetime.utcnow().isoformat(),
+        "active": True
+    }
+    values_goals_collection.insert_one(goal)
+    
+    # Award points
+    points_earned = 50
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
+    )
+    
+    # Check badges
+    new_badges = check_and_award_badges(user["user_id"])
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
+            )
+            points_earned += badge_points
+    
+    response = {
+        "goal_id": goal_id,
+        "message": f"Beautiful! {goal_data.value_name} is a wonderful value to honor. 💫",
+        "points_earned": points_earned
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/values/goals")
+def get_values_goals(user = Depends(get_current_user)):
+    """Get user's values-based goals"""
+    goals = list(values_goals_collection.find({"user_id": user["user_id"]}).sort("created_at", -1))
+    
+    for goal in goals:
+        goal.pop('_id', None)
+    
+    return {"goals": goals}
+
+@app.put("/api/values/goals/{goal_id}")
+def update_values_goal(goal_id: str, goal_data: ValueBasedGoal, user = Depends(get_current_user)):
+    """Update a values-based goal"""
+    goal = values_goals_collection.find_one({"goal_id": goal_id, "user_id": user["user_id"]})
+    
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    values_goals_collection.update_one(
+        {"goal_id": goal_id},
+        {"$set": {
+            "value_name": goal_data.value_name,
+            "value_description": goal_data.value_description,
+            "behavior_intentions": goal_data.behavior_intentions
+        }}
+    )
+    
+    return {"message": "Goal updated successfully"}
+
+@app.delete("/api/values/goals/{goal_id}")
+def delete_values_goal(goal_id: str, user = Depends(get_current_user)):
+    """Delete a values-based goal"""
+    goal = values_goals_collection.find_one({"goal_id": goal_id, "user_id": user["user_id"]})
+    
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    values_goals_collection.delete_one({"goal_id": goal_id})
+    return {"message": "Goal deleted"}
+
+# ===== RESTAURANT/SOCIAL EATING PREP =====
+@app.post("/api/restaurant-prep")
+def create_restaurant_prep(prep_data: RestaurantPrepLog, user = Depends(get_current_user)):
+    """Log restaurant/social eating preparation or reflection"""
+    prep_id = str(uuid.uuid4())
+    prep = {
+        "prep_id": prep_id,
+        "user_id": user["user_id"],
+        "event_type": prep_data.event_type,
+        "before_intention": prep_data.before_intention,
+        "before_concerns": prep_data.before_concerns,
+        "during_checkin": prep_data.during_checkin,
+        "after_reflection": prep_data.after_reflection,
+        "learned": prep_data.learned,
+        "honored_body": prep_data.honored_body,
+        "event_date": prep_data.event_date,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    restaurant_prep_collection.insert_one(prep)
+    
+    # Award points
+    points_earned = 15
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
+    )
+    
+    # Check badges
+    new_badges = check_and_award_badges(user["user_id"])
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
+            )
+            points_earned += badge_points
+    
+    response = {
+        "prep_id": prep_id,
+        "message": "Preparing mindfully for social eating shows self-care! 🍽️ You've got this.",
+        "points_earned": points_earned
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/restaurant-prep")
+def get_restaurant_preps(user = Depends(get_current_user)):
+    """Get user's social eating preparations"""
+    preps = list(restaurant_prep_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    for prep in preps:
+        prep.pop('_id', None)
+    
+    return {"preps": preps}
+
+@app.get("/api/restaurant-prep/insights")
+def get_social_eating_insights(user = Depends(get_current_user)):
+    """Get insights on social eating patterns"""
+    preps = list(restaurant_prep_collection.find({"user_id": user["user_id"]}))
+    
+    if len(preps) < 2:
+        return {
+            "insights": ["Log a few social eating events to see patterns! 🍽️"],
+            "common_concerns": [],
+            "honored_body_percentage": None
+        }
+    
+    from collections import Counter
+    
+    # Analyze
+    honored_count = sum(1 for prep in preps if prep.get("honored_body"))
+    honored_percentage = round((honored_count / len(preps)) * 100)
+    
+    # Common event types
+    event_types = Counter([prep.get("event_type") for prep in preps if prep.get("event_type")])
+    
+    # Generate insights
+    insights = []
+    if honored_percentage >= 70:
+        insights.append(f"🎉 You honored your body at {honored_percentage}% of social events. That's amazing self-trust!")
+    elif honored_percentage >= 40:
+        insights.append(f"💚 You're honoring your body at social events {honored_percentage}% of the time. Keep practicing!")
+    
+    if len(event_types) >= 3:
+        insights.append("🌟 You're navigating different social eating situations. Each is a learning opportunity!")
+    
+    return {
+        "insights": insights if insights else ["Keep exploring social eating! 🍽️"],
+        "honored_body_percentage": honored_percentage,
+        "total_events": len(preps),
+        "most_common_event": event_types.most_common(1)[0][0] if event_types else None
+    }
+
+# ===== BODY APPRECIATION JOURNAL =====
+@app.get("/api/body-appreciation/categories")
+def get_appreciation_categories():
+    """Get body appreciation categories"""
+    return {"categories": APPRECIATION_CATEGORIES}
+
+@app.post("/api/body-appreciation")
+def create_body_appreciation(appreciation_data: BodyAppreciationLog, user = Depends(get_current_user)):
+    """Log body appreciation (function over form)"""
+    appreciation_id = str(uuid.uuid4())
+    appreciation = {
+        "appreciation_id": appreciation_id,
+        "user_id": user["user_id"],
+        "image_base64": appreciation_data.image_base64,
+        "body_function": appreciation_data.body_function,
+        "appreciation_note": appreciation_data.appreciation_note,
+        "category": appreciation_data.category,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    body_appreciation_collection.insert_one(appreciation)
+    
+    # Award points
+    points_earned = 15
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
+    )
+    
+    # Check badges
+    new_badges = check_and_award_badges(user["user_id"])
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
+            )
+            points_earned += badge_points
+    
+    response = {
+        "appreciation_id": appreciation_id,
+        "message": "Thank you for celebrating what your body DOES, not how it looks. 🙏 This is powerful!",
+        "points_earned": points_earned
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/body-appreciation")
+def get_body_appreciations(user = Depends(get_current_user)):
+    """Get user's body appreciation logs"""
+    appreciations = list(body_appreciation_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    for appreciation in appreciations:
+        appreciation.pop('_id', None)
+    
+    return {"appreciations": appreciations}
+
+@app.delete("/api/body-appreciation/{appreciation_id}")
+def delete_body_appreciation(appreciation_id: str, user = Depends(get_current_user)):
+    """Delete body appreciation"""
+    appreciation = body_appreciation_collection.find_one({"appreciation_id": appreciation_id, "user_id": user["user_id"]})
+    
+    if not appreciation:
+        raise HTTPException(status_code=404, detail="Appreciation not found")
+    
+    body_appreciation_collection.delete_one({"appreciation_id": appreciation_id})
+    return {"message": "Appreciation deleted"}
+
     }
     movement_collection.insert_one(movement)
     
