@@ -1209,47 +1209,6 @@ def get_rewards_status(user = Depends(get_current_user)):
     }
 
 
-@app.post("/api/progress-photos")
-def upload_progress_photo(photo_data: ProgressPhoto, user = Depends(get_current_user)):
-    photo_id = str(uuid.uuid4())
-    photo = {
-        "photo_id": photo_id,
-        "user_id": user["user_id"],
-        "image_base64": photo_data.image_base64,
-        "weight": photo_data.weight,
-        "notes": photo_data.notes,
-        "timestamp": datetime.utcnow().isoformat(),
-        "created_at": datetime.utcnow().isoformat()
-    }
-    progress_photos_collection.insert_one(photo)
-    
-    return {
-        "photo_id": photo_id,
-        "message": "Progress photo uploaded successfully!"
-    }
-
-@app.get("/api/progress-photos")
-def get_progress_photos(user = Depends(get_current_user)):
-    photos = list(progress_photos_collection.find({"user_id": user["user_id"]}).sort("timestamp", 1))
-    
-    for photo in photos:
-        photo.pop('_id', None)
-    
-    return {"photos": photos}
-
-@app.delete("/api/progress-photos/{photo_id}")
-def delete_progress_photo(photo_id: str, user = Depends(get_current_user)):
-    photo = progress_photos_collection.find_one({"photo_id": photo_id})
-    
-    if not photo:
-        raise HTTPException(status_code=404, detail="Photo not found")
-    
-    if photo["user_id"] != user["user_id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    progress_photos_collection.delete_one({"photo_id": photo_id})
-    return {"message": "Photo deleted successfully"}
-
 @app.post("/api/meals")
 async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
     nutrition_data = await analyze_food_image(meal_data.image_base64)
