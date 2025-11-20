@@ -188,6 +188,38 @@ class MovementLog(BaseModel):
     
     notes: Optional[str] = ""
 
+class SensoryMealLog(BaseModel):
+    meal_id: str  # Link to existing meal
+    textures: Optional[List[str]] = []  # "crunchy", "smooth", "chewy", "soft", "crispy"
+    flavors: Optional[List[str]] = []  # "sweet", "salty", "sour", "bitter", "umami", "spicy"
+    temperatures: Optional[List[str]] = []  # "hot", "warm", "room temp", "cold", "frozen"
+    satisfaction_rating: Optional[int] = None  # 1-10 (sensory satisfaction, not fullness)
+    sensory_variety: Optional[bool] = None  # Did meal have variety?
+    most_satisfying_aspect: Optional[str] = None  # What sensory aspect satisfied most?
+    notes: Optional[str] = ""
+
+class ValueBasedGoal(BaseModel):
+    value_name: str  # "play", "rest", "connection", "joy", "creativity", "peace"
+    value_description: str  # Why this value matters to user
+    behavior_intentions: List[str]  # Specific behaviors aligned with value
+    # NOT outcome-based: no weight, size, shape goals allowed
+
+class RestaurantPrepLog(BaseModel):
+    event_type: str  # "restaurant", "family_dinner", "work_event", "date", "party"
+    before_intention: Optional[str] = None  # "How do I want to feel?"
+    before_concerns: Optional[str] = None  # Anxieties or worries
+    during_checkin: Optional[str] = None  # "Am I listening to my body?"
+    after_reflection: Optional[str] = None  # "How did it go?"
+    learned: Optional[str] = None  # Key learning
+    honored_body: Optional[bool] = None  # Did you listen to body cues?
+    event_date: Optional[str] = None  # When is/was the event
+
+class BodyAppreciationLog(BaseModel):
+    image_base64: Optional[str] = None  # Optional photo
+    body_function: str  # "My legs carried me on a walk"
+    appreciation_note: str  # What you're grateful for
+    category: str  # "strength", "movement", "creation", "connection", "senses", "healing"
+
 class UserProfile(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
