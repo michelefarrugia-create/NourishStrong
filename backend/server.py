@@ -2289,9 +2289,6 @@ def get_user_analytics(user_id: str, coach = Depends(require_coach)):
             "current_streak": 0,
             "weekly_trend": []
         }
-    
-    now = datetime.utcnow()
-    week_ago = now - timedelta(days=7)
 
 @app.get("/api/coach/users/{user_id}/movement")
 def get_client_movement(user_id: str, coach = Depends(require_coach)):
