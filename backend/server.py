@@ -71,29 +71,26 @@ BADGES = {
     "challenge_10": {"name": "Challenge Seeker", "description": "Completed 10 challenges", "icon": "🎯", "points": 100},
 }
 
-# Motivational quotes
-MOTIVATIONAL_QUOTES = [
-    {"quote": "Every meal logged is a step closer to your goal.", "category": "motivation"},
-    {"quote": "Progress, not perfection. You're doing great!", "category": "encouragement"},
-    {"quote": "Small changes lead to remarkable transformations.", "category": "motivation"},
-    {"quote": "Your journey is unique and beautiful.", "category": "encouragement"},
-    {"quote": "Consistency is the key to lasting change.", "category": "motivation"},
-    {"quote": "Celebrate every small victory along the way.", "category": "encouragement"},
-    {"quote": "You're stronger than you think.", "category": "motivation"},
-    {"quote": "Focus on how you feel, not just the numbers.", "category": "wellness"},
-    {"quote": "Nourish your body with love and intention.", "category": "wellness"},
-    {"quote": "Every day is a fresh start.", "category": "motivation"},
-    {"quote": "Your health journey is a marathon, not a sprint.", "category": "wellness"},
-    {"quote": "Believe in yourself and all that you are.", "category": "encouragement"},
-    {"quote": "You're making positive choices for your future self.", "category": "motivation"},
-    {"quote": "Progress is progress, no matter how small.", "category": "encouragement"},
-    {"quote": "Stay committed to your goals, even on tough days.", "category": "motivation"},
-    {"quote": "Your body is your home. Treat it with respect.", "category": "wellness"},
-    {"quote": "Healthy eating is an act of self-love.", "category": "wellness"},
-    {"quote": "You have the power to change your story.", "category": "motivation"},
-    {"quote": "Trust the process and enjoy the journey.", "category": "encouragement"},
-    {"quote": "Your dedication is inspiring. Keep going!", "category": "encouragement"},
+# Body-positive affirmations and prompts
+BODY_HONOR_PROMPTS = [
+    {"quote": "What did your body do for you today? 💚", "category": "body-positive"},
+    {"quote": "Your body deserves nourishment and rest. Both are equally important. 🌙", "category": "body-positive"},
+    {"quote": "Moving or resting - whatever your body needs is perfect. ✨", "category": "body-positive"},
+    {"quote": "Every body is a good body, including yours. 🌟", "category": "body-positive"},
+    {"quote": "Listen to your body's wisdom today. It knows what it needs. 🧘", "category": "body-positive"},
+    {"quote": "Your worth isn't measured by what you eat or how you move. 💫", "category": "body-positive"},
+    {"quote": "Honor your hunger. Honor your fullness. Honor yourself. 🌸", "category": "body-positive"},
+    {"quote": "Rest is not laziness. Rest is self-care. 😴", "category": "body-positive"},
+    {"quote": "Your body is your home. Treat it with kindness. 🏡", "category": "body-positive"},
+    {"quote": "Thank your body for all it does, not how it looks. 🙏", "category": "body-positive"},
+    {"quote": "Gentle movement can feel as good as rest. Trust what you need. 🌊", "category": "body-positive"},
+    {"quote": "You deserve to eat foods that bring you joy and satisfaction. 🍽️", "category": "body-positive"},
+    {"quote": "Your body's signals are valid. You are the expert on you. 💭", "category": "body-positive"},
+    {"quote": "Healing your relationship with your body is a journey, not a race. 🛤️", "category": "body-positive"},
+    {"quote": "What if you treated your body like a friend today? 🤝", "category": "body-positive"}
 ]
+
+MOTIVATIONAL_QUOTES = BODY_HONOR_PROMPTS  # Keep for backward compatibility
 
 # Models
 class UserRegister(BaseModel):
