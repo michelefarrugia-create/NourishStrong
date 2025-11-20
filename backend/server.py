@@ -490,6 +490,41 @@ def check_and_award_badges(user_id: str) -> List[str]:
     if completed_challenges >= 10 and "challenge_10" not in current_badges:
         new_badges.append("challenge_10")
     
+    # Movement badges
+    movements = list(movement_collection.find({"user_id": user_id}))
+    movement_count = len(movements)
+    
+    if movement_count >= 1 and "first_movement" not in current_badges:
+        new_badges.append("first_movement")
+    
+    # Joy explorer - 5 different movement types
+    movement_types = set(m.get("movement_type") for m in movements if m.get("movement_type"))
+    if len(movement_types) >= 5 and "joy_explorer" not in current_badges:
+        new_badges.append("joy_explorer")
+    
+    if len(movement_types) >= 10 and "movement_variety" not in current_badges:
+        new_badges.append("movement_variety")
+    
+    # Rest advocate - honored rest 5 times
+    rest_count = sum(1 for m in movements if m.get("is_rest_day"))
+    if rest_count >= 5 and "rest_advocate" not in current_badges:
+        new_badges.append("rest_advocate")
+    
+    # Social mover - 5 social movements
+    social_count = sum(1 for m in movements if m.get("was_social"))
+    if social_count >= 5 and "social_mover" not in current_badges:
+        new_badges.append("social_mover")
+    
+    # Body listener - honored body cravings 10 times
+    body_craving_count = sum(1 for m in movements if m.get("body_craving"))
+    if body_craving_count >= 10 and "body_listener" not in current_badges:
+        new_badges.append("body_listener")
+    
+    # Mindful mover - 10 mindful sessions
+    mindful_count = sum(1 for m in movements if m.get("was_present"))
+    if mindful_count >= 10 and "mindful_mover" not in current_badges:
+        new_badges.append("mindful_mover")
+    
     # Update user badges
     if new_badges:
         users_collection.update_one(
