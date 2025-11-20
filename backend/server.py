@@ -630,6 +630,44 @@ def check_and_award_badges(user_id: str) -> List[str]:
     if mindful_count >= 10 and "mindful_mover" not in current_badges:
         new_badges.append("mindful_mover")
     
+    # Sensory eating badges
+    sensory_logs = list(sensory_logs_collection.find({"user_id": user_id}))
+    if len(sensory_logs) >= 10 and "sensory_explorer" not in current_badges:
+        new_badges.append("sensory_explorer")
+    
+    all_textures = set()
+    for log in sensory_logs:
+        if log.get("textures"):
+            all_textures.update(log.get("textures", []))
+    if len(all_textures) >= 5 and "texture_lover" not in current_badges:
+        new_badges.append("texture_lover")
+    
+    # Values-based badges
+    values_goals = list(values_goals_collection.find({"user_id": user_id}))
+    if len(values_goals) >= 1 and "values_aligned" not in current_badges:
+        new_badges.append("values_aligned")
+    
+    total_intentions = sum(len(goal.get("behavior_intentions", [])) for goal in values_goals)
+    if total_intentions >= 10 and "intention_keeper" not in current_badges:
+        new_badges.append("intention_keeper")
+    
+    # Social eating badges
+    restaurant_preps = list(restaurant_prep_collection.find({"user_id": user_id}))
+    if len(restaurant_preps) >= 5 and "social_navigator" not in current_badges:
+        new_badges.append("social_navigator")
+    
+    honored_count = sum(1 for prep in restaurant_preps if prep.get("honored_body"))
+    if honored_count >= 10 and "body_listener_social" not in current_badges:
+        new_badges.append("body_listener_social")
+    
+    # Body appreciation badges
+    appreciations = list(body_appreciation_collection.find({"user_id": user_id}))
+    if len(appreciations) >= 10 and "gratitude_keeper" not in current_badges:
+        new_badges.append("gratitude_keeper")
+    
+    if len(appreciations) >= 20 and "function_focused" not in current_badges:
+        new_badges.append("function_focused")
+    
     # Update user badges
     if new_badges:
         users_collection.update_one(
