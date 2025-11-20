@@ -1103,12 +1103,46 @@ async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
         "notes": meal_data.notes,
         "nutrition": nutrition_data,
         "timestamp": datetime.utcnow().isoformat(),
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.utcnow().isoformat(),
+        # Mood journal fields
+        "before_mood": meal_data.before_mood,
+        "before_energy": meal_data.before_energy,
+        "hunger_level": meal_data.hunger_level,
+        "after_mood": meal_data.after_mood,
+        "after_energy": meal_data.after_energy,
+        "satisfaction_level": meal_data.satisfaction_level
     }
     meals_collection.insert_one(meal)
     
+    # Award points for logging meal
+    points_earned = 10
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {
+            "$inc": {
+                "points": points_earned,
+                "total_points_earned": points_earned
+            }
+        }
+    )
+    
     # Check for new badges
     new_badges = check_and_award_badges(user["user_id"])
+    
+    # Award points for new badges
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {
+                    "$inc": {
+                        "points": badge_points,
+                        "total_points_earned": badge_points
+                    }
+                }
+            )
+            points_earned += badge_points
     
     if user["role"] == "user":
         response = {
