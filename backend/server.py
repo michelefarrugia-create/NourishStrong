@@ -70,6 +70,15 @@ BADGES = {
     "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑", "points": 30},
     "mood_master": {"name": "Mood Master", "description": "Tracked mood for 10 meals", "icon": "😊", "points": 50},
     "challenge_10": {"name": "Challenge Seeker", "description": "Completed 10 challenges", "icon": "🎯", "points": 100},
+    
+    # Movement badges (joy-focused, not performance)
+    "first_movement": {"name": "First Move", "description": "Logged your first movement", "icon": "✨", "points": 50},
+    "joy_explorer": {"name": "Joy Explorer", "description": "Tried 5 different movement types", "icon": "🌈", "points": 100},
+    "rest_advocate": {"name": "Rest Advocate", "description": "Honored rest 5 times", "icon": "🌙", "points": 100},
+    "social_mover": {"name": "Social Butterfly", "description": "5 social movement activities", "icon": "🦋", "points": 75},
+    "body_listener": {"name": "Body Listener", "description": "Honored what your body craved 10 times", "icon": "💚", "points": 150},
+    "mindful_mover": {"name": "Mindful Mover", "description": "10 mindful movement sessions", "icon": "🧘", "points": 100},
+    "movement_variety": {"name": "Variety Champion", "description": "Logged 10 different movement types", "icon": "🎨", "points": 200},
 }
 
 # Body-positive affirmations and prompts
