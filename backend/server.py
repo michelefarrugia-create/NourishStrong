@@ -83,6 +83,22 @@ BADGES = {
     "body_listener": {"name": "Body Listener", "description": "Honored what your body craved 10 times", "icon": "💚", "points": 150},
     "mindful_mover": {"name": "Mindful Mover", "description": "10 mindful movement sessions", "icon": "🧘", "points": 100},
     "movement_variety": {"name": "Variety Champion", "description": "Logged 10 different movement types", "icon": "🎨", "points": 200},
+    
+    # Sensory eating badges
+    "sensory_explorer": {"name": "Sensory Explorer", "description": "Tracked sensory experience for 10 meals", "icon": "👅", "points": 75},
+    "texture_lover": {"name": "Texture Lover", "description": "Explored 5 different textures", "icon": "🥕", "points": 50},
+    
+    # Values-based badges
+    "values_aligned": {"name": "Values Aligned", "description": "Created your first value-based goal", "icon": "🎯", "points": 100},
+    "intention_keeper": {"name": "Intention Keeper", "description": "Logged 10 behavior intentions", "icon": "💫", "points": 150},
+    
+    # Social eating badges
+    "social_navigator": {"name": "Social Navigator", "description": "Prepared for 5 social eating events", "icon": "🍽️", "points": 100},
+    "body_listener_social": {"name": "Social Body Listener", "description": "Honored body at 10 social events", "icon": "🎉", "points": 150},
+    
+    # Body appreciation badges
+    "gratitude_keeper": {"name": "Gratitude Keeper", "description": "Logged 10 body appreciation moments", "icon": "🙏", "points": 100},
+    "function_focused": {"name": "Function Focused", "description": "20 body function appreciations", "icon": "✨", "points": 200},
 }
 
 # Body-positive affirmations and prompts
