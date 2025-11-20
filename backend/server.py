@@ -439,13 +439,15 @@ def generate_daily_challenge(user_id: str) -> dict:
         existing.pop('_id', None)
         return existing
     
-    # Create new challenge
+    # Create new invitation (not pressure-based challenge)
     challenges = [
-        {"id": "log_breakfast", "title": "Log Your Breakfast", "description": "Start your day right by logging breakfast", "icon": "🌅"},
-        {"id": "log_3_meals", "title": "Log 3 Meals Today", "description": "Track all your main meals", "icon": "🍽️"},
-        {"id": "early_meal", "title": "Early Bird Special", "description": "Log a meal before 9am", "icon": "⏰"},
-        {"id": "add_notes", "title": "Mindful Eating", "description": "Add notes to your meal today", "icon": "📝"},
-        {"id": "log_any_meal", "title": "Stay Consistent", "description": "Log at least one meal today", "icon": "✨"},
+        {"id": "notice_hunger", "title": "Notice Your Hunger", "description": "Check in with your hunger before eating today", "icon": "🧘"},
+        {"id": "mindful_bite", "title": "Savor One Bite", "description": "Take one mindful bite today - notice taste, texture, satisfaction", "icon": "🌸"},
+        {"id": "body_gratitude", "title": "Thank Your Body", "description": "What did your body do for you today?", "icon": "💚"},
+        {"id": "joyful_movement", "title": "Move for Joy", "description": "Try movement that feels good (or rest if that's what you need)", "icon": "✨"},
+        {"id": "honor_rest", "title": "Honor Rest", "description": "If you're tired, give yourself permission to rest", "icon": "🌙"},
+        {"id": "food_neutrality", "title": "Food is Neutral", "description": "Remind yourself: all foods can fit", "icon": "🍽️"},
+        {"id": "satisfaction_check", "title": "Satisfaction Check", "description": "Ask yourself: did this meal satisfy me?", "icon": "😊"},
     ]
     
     import random
