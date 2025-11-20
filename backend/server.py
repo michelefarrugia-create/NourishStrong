@@ -1211,6 +1211,178 @@ def get_progress_comparison(user = Depends(get_current_user)):
         improvements = {
             "meals": current_week["total_meals"] - previous_week["total_meals"],
             "days": current_week["days_logged"] - previous_week["days_logged"],
+
+@app.get("/api/movement/types")
+def get_movement_types():
+    """Get all joyful movement types"""
+    return {"movement_types": MOVEMENT_TYPES, "intentions": MOVEMENT_INTENTIONS}
+
+@app.post("/api/movement")
+def log_movement(movement_data: MovementLog, user = Depends(get_current_user)):
+    """Log a joyful movement or rest day"""
+    movement_id = str(uuid.uuid4())
+    movement = {
+        "movement_id": movement_id,
+        "user_id": user["user_id"],
+        "before_mood": movement_data.before_mood,
+        "before_energy": movement_data.before_energy,
+        "movement_type": movement_data.movement_type,
+        "movement_category": movement_data.movement_category,
+        "body_craving": movement_data.body_craving,
+        "movement_intention": movement_data.movement_intention,
+        "after_mood": movement_data.after_mood,
+        "after_energy": movement_data.after_energy,
+        "was_present": movement_data.was_present,
+        "was_social": movement_data.was_social,
+        "social_with": movement_data.social_with,
+        "body_gratitude": movement_data.body_gratitude,
+        "is_rest_day": movement_data.is_rest_day,
+        "notes": movement_data.notes,
+        "timestamp": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    movement_collection.insert_one(movement)
+    
+    # Award points
+    points_earned = 10 if not movement_data.is_rest_day else 15  # Extra points for honoring rest!
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
+    )
+    
+    # Check for new badges
+    new_badges = check_and_award_badges(user["user_id"])
+    
+    # Award badge points
+    if new_badges:
+        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
+        if badge_points > 0:
+            users_collection.update_one(
+                {"user_id": user["user_id"]},
+                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
+            )
+            points_earned += badge_points
+    
+    # Generate appropriate message
+    if movement_data.is_rest_day:
+        message = "Thank you for honoring your body's need for rest! 🌙 Rest is just as important as movement."
+    else:
+        movement_name = next((m["name"] for m in MOVEMENT_TYPES if m["id"] == movement_data.movement_type), "movement")
+        message = f"Beautiful! {movement_name} sounds wonderful. 💚 Thank you for moving in a way that felt good."
+    
+    response = {
+        "movement_id": movement_id,
+        "message": message,
+        "points_earned": points_earned,
+        "timestamp": movement["timestamp"]
+    }
+    
+    if new_badges:
+        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
+        response["celebration"] = True
+    
+    return response
+
+@app.get("/api/movement")
+def get_movements(user = Depends(get_current_user)):
+    """Get user's movement log"""
+    movements = list(movement_collection.find({"user_id": user["user_id"]}).sort("timestamp", -1))
+    
+    for movement in movements:
+        movement.pop('_id', None)
+    
+    return {"movements": movements}
+
+@app.get("/api/movement/insights")
+def get_movement_insights(user = Depends(get_current_user)):
+    """Get personalized movement insights"""
+    movements = list(movement_collection.find({"user_id": user["user_id"]}))
+    
+    if len(movements) < 3:
+        return {
+            "insights": ["Log a few movements to see your patterns! 💚"],
+            "variety_count": 0,
+            "rest_count": 0,
+            "social_count": 0,
+            "recommendations": []
+        }
+    
+    # Analyze patterns
+    movement_types = [m.get("movement_type") for m in movements if m.get("movement_type")]
+    variety_count = len(set(movement_types))
+    rest_count = sum(1 for m in movements if m.get("is_rest_day"))
+    social_count = sum(1 for m in movements if m.get("was_social"))
+    
+    # Energy patterns
+    energizing_movements = []
+    exhausting_movements = []
+    for m in movements:
+        if m.get("before_energy") and m.get("after_energy"):
+            energy_map = {"drained": 1, "moderate": 2, "energized": 3}
+            before = energy_map.get(m.get("before_energy"), 2)
+            after = energy_map.get(m.get("after_energy"), 2)
+            if after > before:
+                energizing_movements.append(m.get("movement_type"))
+            elif after < before:
+                exhausting_movements.append(m.get("movement_type"))
+    
+    # Most common energizing movement
+    if energizing_movements:
+        from collections import Counter
+        most_energizing = Counter(energizing_movements).most_common(1)[0][0]
+        energizing_name = next((m["name"] for m in MOVEMENT_TYPES if m["id"] == most_energizing), most_energizing)
+    else:
+        energizing_name = None
+    
+    # Generate insights
+    insights = []
+    if variety_count >= 5:
+        insights.append(f"🌈 You've explored {variety_count} different types of movement! Beautiful variety.")
+    
+    if rest_count >= 3:
+        insights.append(f"🌙 You've honored rest {rest_count} times. Your body thanks you!")
+    
+    if social_count >= 3:
+        insights.append(f"🦋 You've enjoyed {social_count} social movement activities. Connection is powerful!")
+    
+    if energizing_name:
+        insights.append(f"⚡ {energizing_name} tends to energize you. Your body knows what it needs!")
+    
+    # Recommendations
+    recommendations = []
+    if rest_count == 0:
+        recommendations.append("Remember: rest is just as valid as movement. Honor it when needed!")
+    
+    if social_count == 0:
+        recommendations.append("Consider inviting a friend to join you - movement can be social!")
+    
+    if variety_count < 3:
+        recommendations.append("Try exploring different types of joyful movement - variety is the spice of life!")
+    
+    return {
+        "insights": insights if insights else ["Keep listening to your body! 💚"],
+        "variety_count": variety_count,
+        "rest_count": rest_count,
+        "social_count": social_count,
+        "energizing_movement": energizing_name,
+        "recommendations": recommendations,
+        "total_movements": len(movements)
+    }
+
+@app.delete("/api/movement/{movement_id}")
+def delete_movement(movement_id: str, user = Depends(get_current_user)):
+    """Delete a movement log"""
+    movement = movement_collection.find_one({"movement_id": movement_id})
+    
+    if not movement:
+        raise HTTPException(status_code=404, detail="Movement not found")
+    
+    if movement["user_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    movement_collection.delete_one({"movement_id": movement_id})
+    return {"message": "Movement log deleted"}
+
             "consistency": current_week["consistency_score"] - previous_week["consistency_score"]
         }
     else:
