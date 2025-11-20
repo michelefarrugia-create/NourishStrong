@@ -28,6 +28,77 @@ function App() {
   const [resetEmail, setResetEmail] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  
+  // Body prompts state
+  const [dailyBodyPrompt, setDailyBodyPrompt] = useState('');
+  
+  // Movement state
+  const [showMovementLogger, setShowMovementLogger] = useState(false);
+  const [movementTypes, setMovementTypes] = useState([]);
+  const [movementIntentions, setMovementIntentions] = useState([]);
+  const [movements, setMovements] = useState([]);
+  const [movementForm, setMovementForm] = useState({
+    before_mood: '',
+    before_energy: '',
+    movement_type: 'walking',
+    body_craving: '',
+    movement_intention: '',
+    after_mood: '',
+    after_energy: '',
+    was_present: false,
+    was_social: false,
+    social_with: '',
+    body_gratitude: '',
+    is_rest_day: false,
+    notes: ''
+  });
+  
+  // Sensory eating state
+  const [showSensoryModal, setShowSensoryModal] = useState(false);
+  const [sensoryOptions, setSensoryOptions] = useState({});
+  const [currentMealForSensory, setCurrentMealForSensory] = useState(null);
+  const [sensoryForm, setSensoryForm] = useState({
+    textures: [],
+    flavors: [],
+    temperatures: [],
+    satisfaction_rating: 5,
+    sensory_variety: false,
+    most_satisfying_aspect: '',
+    notes: ''
+  });
+  
+  // Values goals state
+  const [showValuesModal, setShowValuesModal] = useState(false);
+  const [wellnessValues, setWellnessValues] = useState([]);
+  const [valuesGoals, setValuesGoals] = useState([]);
+  const [valuesForm, setValuesForm] = useState({
+    value_name: '',
+    value_description: '',
+    behavior_intentions: ['']
+  });
+  
+  // Restaurant prep state
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [restaurantForm, setRestaurantForm] = useState({
+    event_type: 'restaurant',
+    before_intention: '',
+    before_concerns: '',
+    during_checkin: '',
+    after_reflection: '',
+    learned: '',
+    honored_body: null,
+    event_date: ''
+  });
+  
+  // Body appreciation state
+  const [showAppreciationModal, setShowAppreciationModal] = useState(false);
+  const [appreciationCategories, setAppreciationCategories] = useState([]);
+  const [appreciationForm, setAppreciationForm] = useState({
+    body_function: '',
+    appreciation_note: '',
+    category: 'strength',
+    image_base64: ''
+  });
 
   // Profile state
   const [showProfile, setShowProfile] = useState(false);
