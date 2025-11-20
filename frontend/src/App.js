@@ -1945,6 +1945,6 @@ function App() {
   }
 
   return user.role === 'coach' ? renderCoachDashboard() : renderUserDashboard();
-}
+}}
 
 export default App;
