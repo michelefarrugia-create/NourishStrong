@@ -421,6 +421,16 @@ def check_and_award_badges(user_id: str) -> List[str]:
     if any(count >= 3 for count in meals_by_day.values()) and "consistent" not in current_badges:
         new_badges.append("consistent")
     
+    # Check for mood master (10 meals with mood tracking)
+    meals_with_mood = sum(1 for meal in meals if meal.get("before_mood") or meal.get("after_mood"))
+    if meals_with_mood >= 10 and "mood_master" not in current_badges:
+        new_badges.append("mood_master")
+    
+    # Check for challenge seeker (10 completed challenges)
+    completed_challenges = challenges_collection.count_documents({"user_id": user_id, "completed": True})
+    if completed_challenges >= 10 and "challenge_10" not in current_badges:
+        new_badges.append("challenge_10")
+    
     # Update user badges
     if new_badges:
         users_collection.update_one(
