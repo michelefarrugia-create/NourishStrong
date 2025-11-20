@@ -175,7 +175,10 @@ function App() {
         fetchMeals();
         fetchGameificationData();
         fetchAnalytics();
-        fetchProgressPhotos();
+        fetchBodyPrompt();
+        fetchMovementData();
+        fetchSensoryOptions();
+        fetchValuesData();
         // Load profile data
         if (user.profile) {
           setProfileData({
