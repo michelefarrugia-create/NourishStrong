@@ -1199,6 +1199,17 @@ def get_rewards_status(user = Depends(get_current_user)):
         }
     }
 
+@app.get("/api/body-prompts/daily")
+def get_daily_body_prompt():
+    """Get a daily body-positive prompt"""
+    import random
+    prompt = random.choice(BODY_HONOR_PROMPTS)
+    return prompt
+
+@app.get("/api/body-prompts/all")
+def get_all_body_prompts():
+    """Get all body-positive prompts"""
+    return {"prompts": BODY_HONOR_PROMPTS}
 
 @app.post("/api/meals")
 async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
