@@ -372,20 +372,38 @@ def check_and_award_badges(user_id: str) -> List[str]:
     if meal_count >= 1 and "first_meal" not in current_badges:
         new_badges.append("first_meal")
     
-    if meal_count >= 10 and "meals_10" not in current_badges:
-        new_badges.append("meals_10")
+    if meal_count >= 5 and "5_meals" not in current_badges:
+        new_badges.append("5_meals")
     
-    if meal_count >= 50 and "meals_50" not in current_badges:
-        new_badges.append("meals_50")
+    if meal_count >= 10 and "10_meals" not in current_badges:
+        new_badges.append("10_meals")
     
-    if meal_count >= 100 and "meals_100" not in current_badges:
-        new_badges.append("meals_100")
+    if meal_count >= 25 and "25_meals" not in current_badges:
+        new_badges.append("25_meals")
     
-    if streak >= 7 and "week_streak" not in current_badges:
-        new_badges.append("week_streak")
+    if meal_count >= 50 and "50_meals" not in current_badges:
+        new_badges.append("50_meals")
     
-    if streak >= 30 and "month_streak" not in current_badges:
-        new_badges.append("month_streak")
+    if meal_count >= 100 and "100_meals" not in current_badges:
+        new_badges.append("100_meals")
+    
+    if meal_count >= 250 and "250_meals" not in current_badges:
+        new_badges.append("250_meals")
+    
+    if streak >= 7 and "streak_7" not in current_badges:
+        new_badges.append("streak_7")
+    
+    if streak >= 14 and "streak_14" not in current_badges:
+        new_badges.append("streak_14")
+    
+    if streak >= 30 and "streak_30" not in current_badges:
+        new_badges.append("streak_30")
+    
+    if streak >= 60 and "streak_60" not in current_badges:
+        new_badges.append("streak_60")
+    
+    if streak >= 100 and "streak_100" not in current_badges:
+        new_badges.append("streak_100")
     
     # Check for early bird (meal before 9am)
     for meal in meals:
