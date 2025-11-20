@@ -1968,6 +1968,114 @@ def get_rewards_status(user = Depends(get_current_user)):
         }
     }
 
+
+@app.get("/api/coach/users/{user_id}/sensory")
+def get_client_sensory_logs(user_id: str, coach = Depends(require_coach)):
+    """Coach views client's sensory eating logs"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    logs = list(sensory_logs_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(30))
+    
+    for log in logs:
+        log.pop('_id', None)
+    
+    # Get insights
+    if len(logs) >= 3:
+        from collections import Counter
+        all_textures = []
+        all_flavors = []
+        for log in logs:
+            if log.get("textures"):
+                all_textures.extend(log.get("textures", []))
+            if log.get("flavors"):
+                all_flavors.extend(log.get("flavors", []))
+        
+        favorite_textures = Counter(all_textures).most_common(3)
+        favorite_flavors = Counter(all_flavors).most_common(3)
+        
+        coach_notes = f"Client prefers {', '.join([t[0] for t in favorite_textures[:2]])} textures and {', '.join([f[0] for f in favorite_flavors[:2]])} flavors. Help them find satisfaction with these preferences!"
+    else:
+        coach_notes = "Client just started exploring sensory eating."
+    
+    return {
+        "sensory_logs": logs,
+        "coach_notes": coach_notes
+    }
+
+@app.get("/api/coach/users/{user_id}/values")
+def get_client_values(user_id: str, coach = Depends(require_coach)):
+    """Coach views client's values-based goals"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    goals = list(values_goals_collection.find({"user_id": user_id, "active": True}))
+    
+    for goal in goals:
+        goal.pop('_id', None)
+    
+    coach_notes = f"Client has {len(goals)} active value-based goal(s). Support their behavior intentions, not outcomes."
+    
+    return {
+        "values_goals": goals,
+        "coach_notes": coach_notes
+    }
+
+@app.get("/api/coach/users/{user_id}/social-eating")
+def get_client_social_eating(user_id: str, coach = Depends(require_coach)):
+    """Coach views client's social eating patterns"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    preps = list(restaurant_prep_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(20))
+    
+    for prep in preps:
+        prep.pop('_id', None)
+    
+    # Analyze patterns
+    honored_count = sum(1 for prep in preps if prep.get("honored_body"))
+    honored_percentage = round((honored_count / len(preps)) * 100) if preps else 0
+    
+    coach_notes = f"Client honored body at {honored_percentage}% of social events ({honored_count}/{len(preps)}). "
+    if honored_percentage < 50:
+        coach_notes += "May need support with social eating situations."
+    else:
+        coach_notes += "Doing well with body listening in social contexts!"
+    
+    return {
+        "social_eating_logs": preps,
+        "honored_percentage": honored_percentage,
+        "coach_notes": coach_notes
+    }
+
+@app.get("/api/coach/users/{user_id}/body-appreciation")
+def get_client_body_appreciation(user_id: str, coach = Depends(require_coach)):
+    """Coach views client's body appreciation journey"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    appreciations = list(body_appreciation_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(20))
+    
+    for appreciation in appreciations:
+        appreciation.pop('_id', None)
+    
+    # Analyze categories
+    from collections import Counter
+    categories = Counter([a.get("category") for a in appreciations if a.get("category")])
+    
+    coach_notes = f"Client has logged {len(appreciations)} body appreciation moments. "
+    if len(appreciations) >= 10:
+        most_common = categories.most_common(1)[0][0] if categories else None
+        coach_notes += f"Most appreciates body for: {most_common}. Celebrate this shift from form to function!"
+    else:
+        coach_notes += "Encourage more body appreciation logging."
+    
+    return {
+        "appreciations": appreciations,
+        "total_count": len(appreciations),
+        "coach_notes": coach_notes
+    }
+
 @app.get("/api/body-prompts/daily")
 def get_daily_body_prompt():
     """Get a daily body-positive prompt"""
