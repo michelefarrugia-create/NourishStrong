@@ -114,6 +114,38 @@ class MealCreate(BaseModel):
     after_energy: Optional[str] = None  # "energized", "moderate", "tired"
     satisfaction_level: Optional[int] = None  # 1-10: 1=very full, 10=still hungry
 
+class MovementLog(BaseModel):
+    # Movement Mood Journal
+    before_mood: Optional[str] = None  # "happy", "neutral", "stressed", "tired"
+    before_energy: Optional[str] = None  # "energized", "moderate", "drained"
+    
+    # Movement type and details
+    movement_type: str  # from predefined list or custom
+    movement_category: Optional[str] = None  # "joyful", "social", "rest", "mindful"
+    
+    # Body sensations and intentions
+    body_craving: Optional[str] = None  # what body wanted
+    movement_intention: Optional[str] = None  # "joy", "stress relief", "connection", "felt good"
+    
+    # After movement
+    after_mood: Optional[str] = None
+    after_energy: Optional[str] = None  # did it energize or exhaust?
+    
+    # Mindfulness
+    was_present: Optional[bool] = None  # were you mindful during movement?
+    
+    # Social aspect
+    was_social: Optional[bool] = None
+    social_with: Optional[str] = None  # "friend", "family", "group", etc.
+    
+    # Body gratitude
+    body_gratitude: Optional[str] = None  # "what did your body do for you?"
+    
+    # Rest flag
+    is_rest_day: bool = False  # celebrating rest
+    
+    notes: Optional[str] = ""
+
 class UserProfile(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
