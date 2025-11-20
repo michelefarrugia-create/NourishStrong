@@ -1840,49 +1840,6 @@ def delete_body_appreciation(appreciation_id: str, user = Depends(get_current_us
     body_appreciation_collection.delete_one({"appreciation_id": appreciation_id})
     return {"message": "Appreciation deleted"}
 
-    }
-    movement_collection.insert_one(movement)
-    
-    # Award points
-    points_earned = 10 if not movement_data.is_rest_day else 15  # Extra points for honoring rest!
-    users_collection.update_one(
-        {"user_id": user["user_id"]},
-        {"$inc": {"points": points_earned, "total_points_earned": points_earned}}
-    )
-    
-    # Check for new badges
-    new_badges = check_and_award_badges(user["user_id"])
-    
-    # Award badge points
-    if new_badges:
-        badge_points = sum(BADGES[b].get("points", 0) for b in new_badges if b in BADGES)
-        if badge_points > 0:
-            users_collection.update_one(
-                {"user_id": user["user_id"]},
-                {"$inc": {"points": badge_points, "total_points_earned": badge_points}}
-            )
-            points_earned += badge_points
-    
-    # Generate appropriate message
-    if movement_data.is_rest_day:
-        message = "Thank you for honoring your body's need for rest! 🌙 Rest is just as important as movement."
-    else:
-        movement_name = next((m["name"] for m in MOVEMENT_TYPES if m["id"] == movement_data.movement_type), "movement")
-        message = f"Beautiful! {movement_name} sounds wonderful. 💚 Thank you for moving in a way that felt good."
-    
-    response = {
-        "movement_id": movement_id,
-        "message": message,
-        "points_earned": points_earned,
-        "timestamp": movement["timestamp"]
-    }
-    
-    if new_badges:
-        response["new_badges"] = [BADGES[b] for b in new_badges if b in BADGES]
-        response["celebration"] = True
-    
-    return response
-
 @app.get("/api/movement")
 def get_movements(user = Depends(get_current_user)):
     """Get user's movement log"""
