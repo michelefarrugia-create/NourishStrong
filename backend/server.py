@@ -1149,7 +1149,8 @@ async def create_meal(meal_data: MealCreate, user = Depends(get_current_user)):
             "meal_id": meal_id,
             "message": f"Great job logging your meal! 🎉 {nutrition_data.get('food_name', 'Your food')} looks delicious. Keep up the amazing work on your journey!",
             "food_name": nutrition_data.get('food_name', 'Unknown'),
-            "timestamp": meal["timestamp"]
+            "timestamp": meal["timestamp"],
+            "points_earned": points_earned
         }
         
         if new_badges:
