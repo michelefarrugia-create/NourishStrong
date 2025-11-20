@@ -122,17 +122,8 @@ class UserProfile(BaseModel):
     goal_weight: Optional[float] = None
     profile_picture: Optional[str] = None  # base64 image
 
-class WeightLog(BaseModel):
-    weight: float
-    notes: Optional[str] = ""
-
 class CoachAssignment(BaseModel):
     coach_email: str
-
-class ProgressPhoto(BaseModel):
-    image_base64: str
-    weight: Optional[float] = None
-    notes: Optional[str] = ""
 
 class DailyChallengeComplete(BaseModel):
     challenge_id: str
