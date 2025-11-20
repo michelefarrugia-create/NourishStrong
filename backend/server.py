@@ -1050,6 +1050,169 @@ def get_analytics_overview(user = Depends(get_current_user)):
         "weekly_trend": weekly_data
     }
 
+@app.get("/api/meals/timing-insights")
+def get_meal_timing_insights(user = Depends(get_current_user)):
+    """Get meal timing patterns and insights"""
+    meals = list(meals_collection.find({"user_id": user["user_id"]}))
+    
+    if len(meals) < 3:
+        return {
+            "insights": [],
+            "typical_eating_window": None,
+            "meal_frequency": None,
+            "recommendations": ["Log more meals to see patterns"]
+        }
+    
+    # Analyze meal times
+    meal_times = []
+    for meal in meals:
+        timestamp = datetime.fromisoformat(meal["timestamp"])
+        hour = timestamp.hour
+        minute = timestamp.minute
+        time_decimal = hour + minute / 60
+        meal_times.append(time_decimal)
+    
+    meal_times.sort()
+    
+    # Calculate typical eating window
+    if meal_times:
+        first_meal_avg = sum([t for t in meal_times if t < 12]) / max(len([t for t in meal_times if t < 12]), 1)
+        last_meal_avg = sum([t for t in meal_times if t > 12]) / max(len([t for t in meal_times if t > 12]), 1)
+        
+        first_meal_hour = int(first_meal_avg)
+        first_meal_min = int((first_meal_avg - first_meal_hour) * 60)
+        last_meal_hour = int(last_meal_avg)
+        last_meal_min = int((last_meal_avg - last_meal_hour) * 60)
+        
+        eating_window = {
+            "first_meal": f"{first_meal_hour:02d}:{first_meal_min:02d}",
+            "last_meal": f"{last_meal_hour:02d}:{last_meal_min:02d}",
+            "window_hours": round(last_meal_avg - first_meal_avg, 1)
+        }
+    else:
+        eating_window = None
+    
+    # Calculate meal frequency
+    total_days = (datetime.utcnow() - datetime.fromisoformat(meals[0]["timestamp"])).days + 1
+    meal_frequency = round(len(meals) / max(total_days, 1), 1)
+    
+    # Generate insights
+    insights = []
+    if meal_frequency >= 3:
+        insights.append("🌟 Excellent consistency! You're averaging 3+ meals per day")
+    elif meal_frequency >= 2:
+        insights.append("💪 Good frequency! Try to add one more meal per day")
+    
+    if eating_window and eating_window["window_hours"] < 8:
+        insights.append("⏰ Your eating window is quite compressed. Consider spacing meals out more")
+    elif eating_window and eating_window["window_hours"] > 14:
+        insights.append("📅 Your eating window is quite long. Consider earlier dinners for better digestion")
+    
+    return {
+        "insights": insights,
+        "typical_eating_window": eating_window,
+        "meal_frequency": meal_frequency,
+        "total_meals": len(meals),
+        "tracking_days": total_days
+    }
+
+@app.get("/api/progress/comparison")
+def get_progress_comparison(user = Depends(get_current_user)):
+    """Compare current week vs previous weeks"""
+    meals = list(meals_collection.find({"user_id": user["user_id"]}))
+    
+    if len(meals) < 7:
+        return {
+            "message": "Need at least a week of data for comparison",
+            "weeks_data": []
+        }
+    
+    now = datetime.utcnow()
+    weeks_data = []
+    
+    # Analyze last 4 weeks
+    for week_offset in range(4):
+        week_start = now - timedelta(days=7 * (week_offset + 1))
+        week_end = now - timedelta(days=7 * week_offset)
+        
+        week_meals = [m for m in meals if week_start <= datetime.fromisoformat(m["timestamp"]) < week_end]
+        
+        # Count meals with mood tracking
+        meals_with_mood = sum(1 for m in week_meals if m.get("before_mood") or m.get("after_mood"))
+        
+        # Calculate streak for that week (simplified)
+        dates = set(datetime.fromisoformat(m["timestamp"]).date() for m in week_meals)
+        
+        weeks_data.append({
+            "week_label": f"Week {4 - week_offset}",
+            "start_date": week_start.date().isoformat(),
+            "end_date": week_end.date().isoformat(),
+            "total_meals": len(week_meals),
+            "days_logged": len(dates),
+            "meals_with_mood": meals_with_mood,
+            "consistency_score": round((len(dates) / 7) * 100)
+        })
+    
+    # Calculate improvements
+    if len(weeks_data) >= 2:
+        current_week = weeks_data[0]
+        previous_week = weeks_data[1]
+        
+        improvements = {
+            "meals": current_week["total_meals"] - previous_week["total_meals"],
+            "days": current_week["days_logged"] - previous_week["days_logged"],
+            "consistency": current_week["consistency_score"] - previous_week["consistency_score"]
+        }
+    else:
+        improvements = None
+    
+    return {
+        "weeks_data": weeks_data,
+        "improvements": improvements,
+        "trending_up": improvements["meals"] > 0 if improvements else None
+    }
+
+@app.get("/api/rewards")
+def get_rewards_status(user = Depends(get_current_user)):
+    """Get user's current points and available rewards"""
+    user_data = users_collection.find_one({"user_id": user["user_id"]})
+    
+    current_points = user_data.get("points", 0)
+    total_earned = user_data.get("total_points_earned", 0)
+    
+    # Define rewards tiers
+    rewards_tiers = [
+        {"name": "Bronze Status", "points_required": 0, "unlocked": True, "icon": "🥉"},
+        {"name": "Silver Status", "points_required": 500, "unlocked": current_points >= 500, "icon": "🥈"},
+        {"name": "Gold Status", "points_required": 1500, "unlocked": current_points >= 1500, "icon": "🥇"},
+        {"name": "Platinum Status", "points_required": 3000, "unlocked": current_points >= 3000, "icon": "💎"},
+        {"name": "Diamond Elite", "points_required": 5000, "unlocked": current_points >= 5000, "icon": "💠"}
+    ]
+    
+    # Calculate next reward
+    next_reward = None
+    for reward in rewards_tiers:
+        if not reward["unlocked"]:
+            next_reward = {
+                "name": reward["name"],
+                "points_needed": reward["points_required"] - current_points,
+                "icon": reward["icon"]
+            }
+            break
+    
+    return {
+        "current_points": current_points,
+        "total_points_earned": total_earned,
+        "rewards_tiers": rewards_tiers,
+        "next_reward": next_reward,
+        "points_breakdown": {
+            "per_meal": 10,
+            "per_badge": "Varies (20-2000)",
+            "per_challenge": 20
+        }
+    }
+
+
 @app.post("/api/progress-photos")
 def upload_progress_photo(photo_data: ProgressPhoto, user = Depends(get_current_user)):
     photo_id = str(uuid.uuid4())
