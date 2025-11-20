@@ -106,6 +106,59 @@ BODY_HONOR_PROMPTS = [
 
 MOTIVATIONAL_QUOTES = BODY_HONOR_PROMPTS  # Keep for backward compatibility
 
+# Sensory eating options
+SENSORY_OPTIONS = {
+    "textures": [
+        {"id": "crunchy", "name": "Crunchy", "icon": "🥕"},
+        {"id": "smooth", "name": "Smooth", "icon": "🍦"},
+        {"id": "chewy", "name": "Chewy", "icon": "🍪"},
+        {"id": "soft", "name": "Soft", "icon": "🍞"},
+        {"id": "crispy", "name": "Crispy", "icon": "🥓"},
+        {"id": "creamy", "name": "Creamy", "icon": "🧈"},
+        {"id": "tender", "name": "Tender", "icon": "🥩"},
+        {"id": "firm", "name": "Firm", "icon": "🥒"}
+    ],
+    "flavors": [
+        {"id": "sweet", "name": "Sweet", "icon": "🍯"},
+        {"id": "salty", "name": "Salty", "icon": "🧂"},
+        {"id": "sour", "name": "Sour", "icon": "🍋"},
+        {"id": "bitter", "name": "Bitter", "icon": "☕"},
+        {"id": "umami", "name": "Umami/Savory", "icon": "🍄"},
+        {"id": "spicy", "name": "Spicy", "icon": "🌶️"}
+    ],
+    "temperatures": [
+        {"id": "hot", "name": "Hot", "icon": "♨️"},
+        {"id": "warm", "name": "Warm", "icon": "🌡️"},
+        {"id": "room_temp", "name": "Room Temperature", "icon": "🌿"},
+        {"id": "cold", "name": "Cold", "icon": "🧊"},
+        {"id": "frozen", "name": "Frozen", "icon": "❄️"}
+    ]
+}
+
+# Values for goal-setting
+WELLNESS_VALUES = [
+    {"id": "play", "name": "Play & Fun", "description": "Bringing lightness and joy to life", "icon": "🎈"},
+    {"id": "rest", "name": "Rest & Recovery", "description": "Honoring body's need for restoration", "icon": "🌙"},
+    {"id": "connection", "name": "Connection & Community", "description": "Building meaningful relationships", "icon": "🤝"},
+    {"id": "joy", "name": "Joy & Pleasure", "description": "Finding delight in daily experiences", "icon": "😊"},
+    {"id": "creativity", "name": "Creativity & Expression", "description": "Expressing yourself authentically", "icon": "🎨"},
+    {"id": "peace", "name": "Peace & Calm", "description": "Cultivating inner tranquility", "icon": "☮️"},
+    {"id": "strength", "name": "Strength & Capability", "description": "Appreciating what your body can do", "icon": "💪"},
+    {"id": "curiosity", "name": "Curiosity & Learning", "description": "Exploring and discovering", "icon": "🔍"},
+    {"id": "self_compassion", "name": "Self-Compassion", "description": "Treating yourself with kindness", "icon": "💚"},
+    {"id": "freedom", "name": "Freedom & Autonomy", "description": "Making choices aligned with your needs", "icon": "🕊️"}
+]
+
+# Body appreciation categories
+APPRECIATION_CATEGORIES = [
+    {"id": "strength", "name": "Strength & Power", "icon": "💪"},
+    {"id": "movement", "name": "Movement & Mobility", "icon": "🚶"},
+    {"id": "creation", "name": "Creation & Making", "icon": "✋"},
+    {"id": "connection", "name": "Connection & Touch", "icon": "🤗"},
+    {"id": "senses", "name": "Senses & Perception", "icon": "👁️"},
+    {"id": "healing", "name": "Healing & Recovery", "icon": "🩹"}
+]
+
 # Joyful movement types (no performance metrics)
 MOVEMENT_TYPES = [
     {"id": "walking", "name": "Walking", "icon": "🚶", "category": "joyful"},
