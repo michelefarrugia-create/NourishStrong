@@ -54,14 +54,22 @@ SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '')
 
 # Badge definitions
 BADGES = {
-    "first_meal": {"name": "First Steps", "description": "Logged your first meal", "icon": "🎯"},
-    "week_streak": {"name": "Week Warrior", "description": "7-day logging streak", "icon": "🔥"},
-    "month_streak": {"name": "Month Master", "description": "30-day logging streak", "icon": "⭐"},
-    "meals_10": {"name": "Getting Started", "description": "Logged 10 meals", "icon": "🌱"},
-    "meals_50": {"name": "Committed", "description": "Logged 50 meals", "icon": "💪"},
-    "meals_100": {"name": "Century Club", "description": "Logged 100 meals", "icon": "🏆"},
-    "early_bird": {"name": "Early Bird", "description": "Logged breakfast before 9am", "icon": "🌅"},
-    "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑"},
+    "first_meal": {"name": "First Meal", "description": "Logged your first meal", "icon": "🎯", "points": 50},
+    "5_meals": {"name": "Getting Started", "description": "Logged 5 meals", "icon": "🌟", "points": 25},
+    "10_meals": {"name": "Building Momentum", "description": "Logged 10 meals", "icon": "🚀", "points": 50},
+    "25_meals": {"name": "Consistency", "description": "Logged 25 meals", "icon": "💪", "points": 100},
+    "50_meals": {"name": "Halfway Hero", "description": "Logged 50 meals", "icon": "🎖️", "points": 200},
+    "100_meals": {"name": "Century Club", "description": "Logged 100 meals", "icon": "🏆", "points": 500},
+    "250_meals": {"name": "Elite Tracker", "description": "Logged 250 meals", "icon": "💎", "points": 1000},
+    "streak_7": {"name": "Week Warrior", "description": "7-day streak", "icon": "🔥", "points": 100},
+    "streak_14": {"name": "Fortnight Champion", "description": "14-day streak", "icon": "🔥🔥", "points": 250},
+    "streak_30": {"name": "Month Master", "description": "30-day streak", "icon": "⭐", "points": 500},
+    "streak_60": {"name": "Unstoppable", "description": "60-day streak", "icon": "⚡", "points": 1000},
+    "streak_100": {"name": "Legendary", "description": "100-day streak", "icon": "👑", "points": 2000},
+    "early_bird": {"name": "Early Bird", "description": "Logged breakfast before 9am", "icon": "🌅", "points": 20},
+    "consistent": {"name": "Consistency King", "description": "Logged 3 meals in one day", "icon": "👑", "points": 30},
+    "mood_master": {"name": "Mood Master", "description": "Tracked mood for 10 meals", "icon": "😊", "points": 50},
+    "challenge_10": {"name": "Challenge Seeker", "description": "Completed 10 challenges", "icon": "🎯", "points": 100},
 }
 
 # Motivational quotes
