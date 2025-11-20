@@ -2370,28 +2370,6 @@ def get_client_movement_summary(user_id: str, coach = Depends(require_coach)):
         "notes": f"Client has explored {variety_score} different movement types and honored rest {rest_count} times. {social_count} movements were social."
     }
 
-    
-    meals_this_week = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]) >= week_ago)
-    
-    # Weekly trend
-    weekly_data = []
-    for i in range(7):
-        day = now - timedelta(days=6-i)
-        day_date = day.date()
-        day_meals = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]).date() == day_date)
-        weekly_data.append({
-            "date": day_date.isoformat(),
-            "day_name": day.strftime("%a"),
-            "meals": day_meals
-        })
-    
-    return {
-        "total_meals": len(meals),
-        "meals_this_week": meals_this_week,
-        "current_streak": calculate_streak(user_id),
-        "weekly_trend": weekly_data
-    }
-
 # Activity endpoints removed - missing required collections and constants
 
 if __name__ == "__main__":
