@@ -41,6 +41,7 @@ meals_collection = db['meals']
 challenges_collection = db['challenges']
 body_prompts_collection = db['body_prompts']
 password_reset_tokens_collection = db['password_reset_tokens']
+movement_collection = db['movement']
 
 # JWT settings
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
