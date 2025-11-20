@@ -1648,6 +1648,84 @@ def get_user_analytics(user_id: str, coach = Depends(require_coach)):
     
     now = datetime.utcnow()
     week_ago = now - timedelta(days=7)
+
+@app.get("/api/coach/users/{user_id}/movement")
+def get_client_movement(user_id: str, coach = Depends(require_coach)):
+    """Coach views client's movement log"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    movements = list(movement_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(50))
+    
+    for movement in movements:
+        movement.pop('_id', None)
+    
+    return {"movements": movements}
+
+@app.get("/api/coach/users/{user_id}/movement-summary")
+def get_client_movement_summary(user_id: str, coach = Depends(require_coach)):
+    """Coach views summary of client's movement patterns"""
+    if user_id not in coach.get("clients", []):
+        raise HTTPException(status_code=403, detail="This user is not assigned to you")
+    
+    movements = list(movement_collection.find({"user_id": user_id}))
+    
+    if not movements:
+        return {
+            "total_movements": 0,
+            "rest_days_honored": 0,
+            "variety_score": 0,
+            "social_movements": 0,
+            "common_intentions": [],
+            "energy_patterns": {}
+        }
+    
+    # Analyze for coach
+    movement_types = [m.get("movement_type") for m in movements if m.get("movement_type")]
+    variety_score = len(set(movement_types))
+    rest_count = sum(1 for m in movements if m.get("is_rest_day"))
+    social_count = sum(1 for m in movements if m.get("was_social"))
+    
+    # Intentions
+    from collections import Counter
+    intentions = [m.get("movement_intention") for m in movements if m.get("movement_intention")]
+    common_intentions = Counter(intentions).most_common(3)
+    
+    # Energy patterns
+    energy_improved = 0
+    energy_decreased = 0
+    for m in movements:
+        if m.get("before_energy") and m.get("after_energy"):
+            energy_map = {"drained": 1, "moderate": 2, "energized": 3}
+            before = energy_map.get(m.get("before_energy"), 2)
+            after = energy_map.get(m.get("after_energy"), 2)
+            if after > before:
+                energy_improved += 1
+            elif after < before:
+                energy_decreased += 1
+    
+    # Body listening
+    honored_cravings = sum(1 for m in movements if m.get("body_craving"))
+    was_mindful = sum(1 for m in movements if m.get("was_present"))
+    
+    return {
+        "total_movements": len(movements),
+        "rest_days_honored": rest_count,
+        "variety_score": variety_score,
+        "social_movements": social_count,
+        "common_intentions": [{"intention": i[0], "count": i[1]} for i in common_intentions],
+        "energy_patterns": {
+            "improved": energy_improved,
+            "decreased": energy_decreased,
+            "percentage_energizing": round((energy_improved / max(energy_improved + energy_decreased, 1)) * 100)
+        },
+        "body_listening": {
+            "honored_cravings": honored_cravings,
+            "mindful_sessions": was_mindful
+        },
+        "notes": f"Client has explored {variety_score} different movement types and honored rest {rest_count} times. {social_count} movements were social."
+    }
+
     
     meals_this_week = sum(1 for m in meals if datetime.fromisoformat(m["timestamp"]) >= week_ago)
     
