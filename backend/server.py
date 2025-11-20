@@ -634,7 +634,9 @@ def register(user_data: UserRegister):
         "coach_id": None,
         "clients": [],
         "badges": [],
-        "streak_record": 0
+        "streak_record": 0,
+        "points": 0,
+        "total_points_earned": 0
     }
     users_collection.insert_one(user)
     
