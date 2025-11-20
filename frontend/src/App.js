@@ -212,6 +212,49 @@ function App() {
     }
   };
 
+  const fetchBodyPrompt = async () => {
+    try {
+      const prompt = await apiCall('/api/body-prompts/daily');
+      setDailyBodyPrompt(prompt);
+    } catch (err) {
+      console.error('Failed to load body prompt:', err);
+    }
+  };
+
+  const fetchMovementData = async () => {
+    try {
+      const typesData = await apiCall('/api/movement/types');
+      setMovementTypes(typesData.movement_types);
+      setMovementIntentions(typesData.intentions);
+      
+      const movementsData = await apiCall('/api/movement');
+      setMovements(movementsData.movements);
+    } catch (err) {
+      console.error('Failed to load movement data:', err);
+    }
+  };
+
+  const fetchSensoryOptions = async () => {
+    try {
+      const data = await apiCall('/api/sensory/options');
+      setSensoryOptions(data.sensory_options);
+    } catch (err) {
+      console.error('Failed to load sensory options:', err);
+    }
+  };
+
+  const fetchValuesData = async () => {
+    try {
+      const valuesData = await apiCall('/api/values/options');
+      setWellnessValues(valuesData.values);
+      
+      const goalsData = await apiCall('/api/values/goals');
+      setValuesGoals(goalsData.goals);
+    } catch (err) {
+      console.error('Failed to load values data:', err);
+    }
+  };
+
   const fetchAnalytics = async () => {
     try {
       const data = await apiCall('/api/analytics/overview');
