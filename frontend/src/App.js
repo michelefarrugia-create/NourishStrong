@@ -543,6 +543,9 @@ function App() {
   };
 
   const scanBarcode = async () => {
+    // Barcode scanning functionality (previously removed)
+    // Can be re-implemented if needed
+  };
 
   const logout = () => {
     setToken(null);
