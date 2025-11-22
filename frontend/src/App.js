@@ -688,6 +688,8 @@ function App() {
     setUser(null);
     localStorage.removeItem('token');
     setCurrentView('login');
+    setSuccess('');
+    setError('');
   };
 
   // Camera functions
