@@ -295,14 +295,27 @@ function App() {
       options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, options);
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Request failed');
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+      
+      // Clone response before reading body
+      const clonedResponse = response.clone();
+      
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error('Request failed');
+        }
+        throw new Error(errorData.detail || 'Request failed');
+      }
+      
+      return await clonedResponse.json();
+    } catch (error) {
+      console.error('API Call Error:', error);
+      throw error;
     }
-    
-    return response.json();
   };
 
   const fetchCurrentUser = async () => {
