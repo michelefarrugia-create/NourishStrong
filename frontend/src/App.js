@@ -1710,49 +1710,6 @@ function App() {
           </div>
         </div>
 
-        {/* Activity History */}
-        <div className="meals-section">
-          <h2 className="section-title">Recent Activities</h2>
-          <div className="meals-grid">
-            {activities.length === 0 ? (
-              <p className="empty-state">No activities logged yet. Start by logging your first workout!</p>
-            ) : (
-              activities.slice(0, 6).map((activity) => (
-                <div key={activity.activity_id} className="meal-card activity-card">
-                  <div className="activity-header">
-                    <span className="activity-type-icon">
-                      {activity.activity_info?.icon || '🏃'}
-                    </span>
-                    <div className="activity-details">
-                      <h4>{activity.activity_info?.name || activity.activity_type}</h4>
-                      {user?.role === 'coach' && (
-                        <p className="activity-duration">{activity.duration_minutes} minutes • {activity.intensity} intensity</p>
-                      )}
-                    </div>
-                  </div>
-                  {user?.role === 'coach' && activity.calories_burned && (
-                    <div className="activity-stats">
-                      <div className="activity-stat">
-                        <span className="activity-stat-icon">🔥</span>
-                        <span>{activity.calories_burned} cal</span>
-                      </div>
-                    </div>
-                  )}
-                  <div className="meal-info">
-                    <p className="meal-time">{new Date(activity.timestamp).toLocaleString()}</p>
-                    {activity.notes && <p className="meal-notes">{activity.notes}</p>}
-                  </div>
-                  <button 
-                    onClick={() => deleteActivity(activity.activity_id)} 
-                    className="delete-button"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
       </div>
       ) : (
         <div className="profile-page">
