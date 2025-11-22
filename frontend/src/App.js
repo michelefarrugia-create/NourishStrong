@@ -298,20 +298,26 @@ function App() {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, options);
       
-      // Clone response before reading body
-      const clonedResponse = response.clone();
+      // Read response text first
+      const responseText = await response.text();
       
       if (!response.ok) {
-        let errorData;
+        let errorMessage = 'Request failed';
         try {
-          errorData = await response.json();
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.detail || errorMessage;
         } catch {
-          throw new Error('Request failed');
+          errorMessage = responseText || errorMessage;
         }
-        throw new Error(errorData.detail || 'Request failed');
+        throw new Error(errorMessage);
       }
       
-      return await clonedResponse.json();
+      // Parse the text as JSON
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return responseText;
+      }
     } catch (error) {
       console.error('API Call Error:', error);
       throw error;
